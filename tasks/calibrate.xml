@@ -1,0 +1,82 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+	</Reference>
+
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Processing">
+			<Executor name="ProcessingThread"  period="0.2">
+				<Component name="Source" type="CvBasic:Sequence" priority="1" bump="0">
+					<param name="sequence.pattern">.*\.JPG</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/calib/</param>
+					<param name="mode.loop">0</param>
+					<param name="mode.auto_next_image">1</param>
+				</Component>
+
+				<Component name="CameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="2">
+					<param name="width">2304</param>
+					<param name="height">1728</param>
+					<param name="camera_matrix">1700 0 0 ; 0 1 0 ; 0 0 1</param>
+					<param name="dist_coeffs">0 0 0 0 0 0 0 0</param>
+				</Component>
+
+				<Component name="Undistort" type="CvBasic:CvUndistort" priority="3" bump="0">
+				</Component>
+
+				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="4" bump="0">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+
+				<Component name="Chessboard" type="CvBasic:CvFindChessboardCorners" priority="5" bump="0">
+					<param name="chessboard.board_width">5</param>
+					<param name="chessboard.board_height">6</param>
+					<param name="chessboard.square_width">0.03</param>
+					<param name="chessboard.square_height">0.03</param>
+					<param name="flags.fast_check">false</param>
+				</Component>
+
+				<Component name="Calib" type="CvBasic:Calib" priority="6" bump="1">
+				</Component>
+
+
+				<Component name="Window" type="CvBasic:CvWindow" priority="10" bump="0">
+					<param name="count">1</param>
+					<param name="title">Okienko</param>
+					<param name="window_resize">1</param>
+				</Component>
+			</Executor>
+		</Subtask>
+
+	</Subtasks>
+
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		<Source name="Source.out_img">
+			<sink>Undistort.in_img</sink>
+			<sink>Calib.in_img</sink>
+		</Source>
+		<Source name="CameraInfo.out_camera_info">
+			<sink>Undistort.in_camera_info</sink>
+			<sink>Calib.in_camera_info</sink>
+		</Source>
+		<Source name="Undistort.out_img">
+			<sink>ColorConv.in_img</sink>
+			<sink>Window.in_img</sink>
+		</Source>
+		<Source name="ColorConv.out_img">
+			<sink>Chessboard.in_img</sink>
+		</Source>
+		<Source name="Chessboard.out_chessboard">
+			<sink>Window.in_draw</sink>
+			<sink>Calib.in_object3d</sink>
+		</Source>
+		<Source name="Calib.out_camera_info">
+			<sink>CameraInfo.in_camera_info</sink>
+		</Source>
+	</DataStreams>
+</Task>
+
+
+
+

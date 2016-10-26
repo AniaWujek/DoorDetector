@@ -1,0 +1,79 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+	</Reference>
+	
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Main">
+			<Executor name="Processing"  period="1">
+				<Component name="Sequence" type="CvBasic:Sequence" priority="1" bump="0">
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/</param>
+					<param name="sequence.pattern">.*\.JPG</param>
+					<param name="mode.loop">1</param>
+					<param name="mode.auto_next_image">false</param>
+				</Component>
+				
+				<Component name="GaussianBlur" type="CvBasic:CvGaussianBlur" priority="2" bump="0">
+				    <param name="sigmax">0.0</param>
+				    <param name="sigmay">0.0</param>
+				    <param name="kernel.height">1</param>
+				    <param name="kernel.width">1</param>
+				</Component>
+
+				<!-- <Component name="CameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="3">
+					<param name="camera_matrix">1755.403450085832, 0, 873.4648210581697; 0, 1750.029023702292, 1087.355972090663; 0, 0, 1</param>
+					<param name="dist_coeffs">-0.2484128841354553, 1.724421443730268, -0.006118221595345721, 0.0054217988733292, -6.006418878291797</param>
+					<param name="width">2304</param>
+					<param name="height">1728</param>
+				</Component>
+
+				<Component name="Undistort" type="CvBasic:CvUndistort" priority="4" bump="0">
+				</Component> -->
+
+				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="3" bump="0">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+
+				<Component name="Histogram" type="DoorDetector:HistogramEqualization" priority="4" bump="0">
+				</Component>
+				
+				<Component name="Window" type="CvBasic:CvWindow" priority="5" bump="0">
+					<param name="count">3</param>
+					<param name="title">original,gaussian,histogram</param>
+					<param name="window_resize">1</param>
+				</Component>
+			</Executor>
+		</Subtask>	
+	
+	</Subtasks>
+	
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		<Source name="Sequence.out_img">
+			<sink>GaussianBlur.in_img</sink>	
+			<sink>Window.in_img0</sink>		
+		</Source>
+		<Source name="GaussianBlur.out_img">
+			<sink>ColorConv.in_img</sink>
+			<!-- <sink>Undistort.in_img</sink> -->
+		</Source>
+		<Source name="ColorConv.out_img">
+			<sink>Histogram.in_img</sink>
+			<sink>Window.in_img1</sink>
+		</Source>
+		<Source name="Histogram.out_img">
+			<sink>Window.in_img2</sink>
+		</Source>
+		<!-- <Source name="CameraInfo.out_camera_info">
+			<sink>Undistort.in_camera_info</sink>
+		</Source>
+		<Source name="Undistort.out_img">
+			<sink>Window.in_img2</sink>
+		</Source> -->
+	</DataStreams>
+</Task>
+
+
+
+

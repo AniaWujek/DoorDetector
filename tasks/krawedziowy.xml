@@ -1,0 +1,99 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+	</Reference>
+	
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Main">
+			<Executor name="Processing"  period="1">
+				<Component name="Sequence" type="CvBasic:Sequence" priority="1" bump="0">
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/</param>
+					<param name="sequence.pattern">.*\.JPG</param>
+					<param name="mode.loop">1</param>
+					<param name="mode.auto_next_image">false</param>
+				</Component>
+				
+				<Component name="GaussianBlur" type="CvBasic:CvGaussianBlur" priority="2" bump="0">
+				    <param name="sigmax">0.0</param>
+				    <param name="sigmay">0.0</param>
+				    <param name="kernel.height">5</param>
+				    <param name="kernel.width">5</param>
+				</Component>
+
+				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="3" bump="0">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+
+				<Component name="Histogram" type="DoorDetector:HistogramEqualization" priority="4" bump="0">
+				</Component>
+
+				<Component name="Canny1" type="CvBasic:CvCanny" priority="5" bump="0">
+					<param name="histeresis.lowerThreshold">50</param>
+					<param name="histeresis.higherThreshold">150</param>
+				</Component>
+
+				<Component name="Canny2" type="CvBasic:CvCanny" priority="6" bump="0">
+					<param name="histeresis.lowerThreshold">50</param>
+					<param name="histeresis.higherThreshold">150</param>
+				</Component>
+
+				<Component name="Lines1" type="CvBasic:CvHoughLines" priority="9" bump="0">
+					<param name="threshold">80</param>
+					<param name="minLineLength">30</param>
+					<param name="maxLineGap">10</param>
+				</Component>
+
+				<Component name="Lines2" type="CvBasic:CvHoughLines" priority="10" bump="0">
+					<param name="threshold">80</param>
+					<param name="minLineLength">30</param>
+					<param name="maxLineGap">10</param>
+				</Component>
+				
+				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
+					<param name="count">4</param>
+					<param name="title">gauss,hist,gauss_edges,hist_edges</param>
+					<param name="window_resize">1</param>
+				</Component>
+			</Executor>
+		</Subtask>	
+	
+	</Subtasks>
+	
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		<Source name="Sequence.out_img">
+			<sink>GaussianBlur.in_img</sink>	
+		</Source>
+		<Source name="GaussianBlur.out_img">
+			<sink>ColorConv.in_img</sink>
+		</Source>
+		<Source name="ColorConv.out_img">
+			<sink>Histogram.in_img</sink>
+			<sink>Canny1.in_img</sink>
+			<sink>Window.in_img0</sink>
+		</Source>
+		<Source name="Histogram.out_img">
+			<sink>Canny2.in_img</sink>
+			<sink>Window.in_img1</sink>
+		</Source>
+		<Source name="Canny1.out_img">
+			<sink>Lines1.in_img</sink>
+			<sink>Window.in_img2</sink>
+		</Source>
+		<Source name="Canny2.out_img">
+			<sink>Lines2.in_img</sink>
+			<sink>Window.in_img3</sink>
+		</Source>
+		<Source name="Lines1.out_linesDrawable">
+			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="Lines2.out_linesDrawable">
+			<sink>Window.in_draw1</sink>
+		</Source>
+	</DataStreams>
+</Task>
+
+
+
+
