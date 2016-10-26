@@ -73,10 +73,18 @@ void SharpenMask::onNewImage() {
 	cv::Mat img = in_img.read().clone();
 	cv::Mat blurred;
 	cv::GaussianBlur(img,blurred,cv::Size(kernel_width, kernel_height), sigmax, sigmay);
-	cv::Mat mask = abs(img - blurred) < threshold;
+	/*cv::Mat mask = abs(img - blurred) < threshold;
 	cv::Mat sharpened = img*(1+amount) + blurred*(-amount);
 	img.copyTo(sharpened,mask);
-	out_img.write(img); 
+	out_img.write(img);*/
+
+	cv::Mat lap;
+	int d = CV_16S;
+	cv::cvtColor( blurred, blurred, CV_BGR2GRAY );
+	cv::Laplacian(blurred,lap,d,threshold,amount,0,cv::BORDER_DEFAULT);
+	cv::Mat output;
+	cv::convertScaleAbs(lap,output);
+	out_img.write(output);
 }
 
 
