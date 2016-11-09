@@ -42,6 +42,8 @@
 					<param name="threshold">75</param>
 					<param name="minLineLength">40</param>
 					<param name="maxLineGap">10</param>
+					<param name="clusters">4</param>
+					<param name="thresh">1000</param>
 				</Component>
 				
 				<Component name="Window" type="CvBasic:CvWindow" priority="8" bump="0">

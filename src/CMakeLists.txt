@@ -11,7 +11,8 @@ FIND_PACKAGE(Boost 1.41.0 REQUIRED COMPONENTS system thread filesystem date_time
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 
 # Set variable with list of all libraries common for this DCL
-SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
+#SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
+SET(DCL_LIBRARIES "${DisCODe_LIBRARIES} ${Boost_LIBRARIES}")
 
 #SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
 
