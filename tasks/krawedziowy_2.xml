@@ -31,6 +31,8 @@
 				<Component name="Canny" type="CvBasic:CvCanny" priority="5" bump="0">
 					<param name="histeresis.lowerThreshold">50</param>
 					<param name="histeresis.higherThreshold">150</param>
+					<param name="autoThresh">1</param>
+					<param name="ratio">0.25</param>
 				</Component>
 
 				<Component name="Morphology" type="CvBasic:CvMorphology" priority="6" bump="0">
@@ -44,11 +46,15 @@
 					<param name="maxLineGap">10</param>
 					<param name="clusters">4</param>
 					<param name="thresh">10</param>
+					<param name="improve">0</param>
+				</Component>
+
+				<Component name="ImproveLines" type="DoorDetector:ImproveLines" priority="8" bump="0">
 				</Component>
 				
-				<Component name="Window" type="CvBasic:CvWindow" priority="8" bump="0">
-					<param name="count">2</param>
-					<param name="title">canny,hough</param>
+				<Component name="Window" type="CvBasic:CvWindow" priority="9" bump="0">
+					<param name="count">3</param>
+					<param name="title">zwykle,poprawione,canny</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -61,9 +67,11 @@
 		<Source name="Sequence.out_img">
 			<sink>GaussianBlur.in_img</sink>
 			<sink>Window.in_img1</sink>
+			<sink>Window.in_img0</sink>
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
+			<sink>ImproveLines.in_img</sink>
 		</Source>
 		<Source name="ColorConv.out_img">
 			<sink>Histogram.in_img</sink>
@@ -76,9 +84,15 @@
 		</Source>
 		<Source name="Morphology.out_img">
 			<sink>Lines.in_img</sink>
-			<sink>Window.in_img0</sink>
+			<sink>Window.in_img2</sink>
+		</Source>
+		<Source name="Lines.out_lines">
+			<sink>ImproveLines.in_lines</sink>
 		</Source>
 		<Source name="Lines.out_linesDrawable">
+			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="ImproveLines.out_linesDrawable">
 			<sink>Window.in_draw1</sink>
 		</Source>
 	</DataStreams>

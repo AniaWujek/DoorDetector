@@ -2,3 +2,5 @@
 ADD_COMPONENT(HistogramEqualization)
 
 ADD_COMPONENT(SharpenMask)
+
+ADD_COMPONENT(ImproveLines)

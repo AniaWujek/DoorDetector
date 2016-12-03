@@ -8,7 +8,7 @@
 		<Subtask name="Main">
 			<Executor name="Processing"  period="1">
 				<Component name="Sequence" type="CvBasic:Sequence" priority="1" bump="0">
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/testy/</param>
 					<param name="sequence.pattern">.*\.JPG</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">false</param>
@@ -17,8 +17,8 @@
 				<Component name="GaussianBlur" type="CvBasic:CvGaussianBlur" priority="2" bump="0">
 				    <param name="sigmax">0.0</param>
 				    <param name="sigmay">0.0</param>
-				    <param name="kernel.height">1</param>
-				    <param name="kernel.width">1</param>
+				    <param name="kernel.height">5</param>
+				    <param name="kernel.width">5</param>
 				</Component>
 
 				<!-- <Component name="CameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="3">
@@ -39,8 +39,8 @@
 				</Component>
 				
 				<Component name="Window" type="CvBasic:CvWindow" priority="5" bump="0">
-					<param name="count">3</param>
-					<param name="title">original,gaussian,histogram</param>
+					<param name="count">2</param>
+					<param name="title">original,gaussian</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -50,21 +50,14 @@
 	
 	<!-- pipes connecting datastreams -->
 	<DataStreams>
-		<Source name="Sequence.out_img">
+		<Source name="Sequence.out_img">	
+			<sink>Window.in_img0</sink>	
 			<sink>GaussianBlur.in_img</sink>	
-			<sink>Window.in_img0</sink>		
 		</Source>
 		<Source name="GaussianBlur.out_img">
-			<sink>ColorConv.in_img</sink>
-			<!-- <sink>Undistort.in_img</sink> -->
+			<sink>Window.in_img1</sink>				
 		</Source>
-		<Source name="ColorConv.out_img">
-			<sink>Histogram.in_img</sink>
-			<sink>Window.in_img1</sink>
-		</Source>
-		<Source name="Histogram.out_img">
-			<sink>Window.in_img2</sink>
-		</Source>
+
 		<!-- <Source name="CameraInfo.out_camera_info">
 			<sink>Undistort.in_camera_info</sink>
 		</Source>

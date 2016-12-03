@@ -12,17 +12,17 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 
 # Set variable with list of all libraries common for this DCL
 #SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
-SET(DCL_LIBRARIES "${DisCODe_LIBRARIES} ${Boost_LIBRARIES}")
+SET(DCL_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
 
-#SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
+SET(DisCODe_LIBRARIES ${DisCODe_LIBRARIES} ${Boost_LIBRARIES})
 
 # Find another necessary libraries
 # # OpenCV library
-# FIND_PACKAGE( OpenCV REQUIRED )
+FIND_PACKAGE( OpenCV REQUIRED )
 # SET(DCL_LIBRARIES ${DCL_LIBRARIES} ${OpenCV_LIBS})
 
 # Find another DCLs our one depends on
-# Use macro: DISCODE_FIND_DCL(<DCL_NAME>)
+DISCODE_FIND_DCL(CvBasic)
 
 # Check, whether all necessary libraries are linked
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs") 
