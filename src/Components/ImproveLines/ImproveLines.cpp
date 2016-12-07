@@ -11,6 +11,7 @@
 #include "Common/Logger.hpp"
 
 #include <boost/bind.hpp>
+#include <algorithm>
 
 namespace Processors {
 namespace ImproveLines {
@@ -210,6 +211,14 @@ float getVariance(std::vector<float> &data) {
 
 }
 
+float findMin(std::vector<float> &data) {
+	return *std::min_element(data.begin(),data.end());
+}
+
+float findMax(std::vector<float> &data) {
+	return *std::max_element(data.begin(),data.end());
+}
+
 void leaveVerticalPerspective(std::vector<cv::Vec4i> &lines, std::vector<float> &angles, int clusters) {
 	cv::Mat mat_angles(angles.size(), 1, CV_32FC1);
 	for(int i = 0; i < angles.size(); ++i) {
@@ -220,7 +229,18 @@ void leaveVerticalPerspective(std::vector<cv::Vec4i> &lines, std::vector<float> 
 		cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT,
 			10, M_PI/float(clusters)),3,cv::KMEANS_PP_CENTERS, centers);
 
-	std::vector<std::vector<float> > angle_groups;
+	std::vector<std::vector<float> > angle_groups(clusters);
+	//angle_groups.reserve(clusters);
+	for(int i=0; i<mat_angles.rows; ++i) {
+		angle_groups[labels.at<float>(i)].push_back(mat_angles.at<float>(i));
+	}
+
+	std::cout<<"\n\n*****";
+	for(int i=0; i<angle_groups.size(); ++i) {
+		//std::cout<<findMin(angle_groups[i])<<"-"<<findMax(angle_groups[i])<<", ";
+		std::cout<<angle_groups[i].size();
+	}
+	std::cout<<"******\n\n";
 
 
 
@@ -234,6 +254,7 @@ void ImproveLines::improveLinesProcessor() {
 
 	connectLines(lines,angles);
 	removeShort(lines, img.rows, img.cols);
+	leaveVerticalPerspective(lines,angles,clusters);
 
 
 	
