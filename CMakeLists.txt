@@ -4,6 +4,13 @@ PROJECT(DoorDetector)
 # CMake required version must be >= 2.6
 cmake_minimum_required(VERSION 2.6)
 
+IF(CMAKE_VERSION VERSION_LESS "3.1")
+   SET(CMAKE_CXX_FLAGS "-std=c++0x")
+   ELSE()
+     SET(CMAKE_CXX_STANDARD 11)
+ENDIF()
+
+
 # Find DisCODe installation
 FIND_PACKAGE(DisCODe REQUIRED)
 

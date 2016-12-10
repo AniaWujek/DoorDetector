@@ -4,40 +4,38 @@
  * \author Anna
  */
 
-#ifndef IMPROVELINES_HPP_
-#define IMPROVELINES_HPP_
+#ifndef VANISHINGPOINTS_HPP_
+#define VANISHINGPOINTS_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
-#include "Types/Line.hpp"
-#include "Types/DrawableContainer.hpp"
 
 #include <opencv2/opencv.hpp>
 
 
 namespace Processors {
-namespace ImproveLines {
+namespace VanishingPoints {
 
 /*!
- * \class ImproveLines
- * \brief ImproveLines processor class.
+ * \class VanishingPoints
+ * \brief VanishingPoints processor class.
  *
  * 
  */
-class ImproveLines: public Base::Component {
+class VanishingPoints: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	ImproveLines(const std::string & name = "ImproveLines");
+	VanishingPoints(const std::string & name = "VanishingPoints");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~ImproveLines();
+	virtual ~VanishingPoints();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -69,34 +67,32 @@ protected:
 	bool onStop();
 
 
-
-
 	// Input data streams
 	Base::DataStreamIn<std::vector<cv::Vec4i> > in_lines;
-	Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Vec4i> > out_lines;
-	Base::DataStreamOut <Types::DrawableContainer> out_linesDrawable;
+	Base::DataStreamOut<std::vector<std::vector<cv::Vec4i> > > out_linesVecs;
+	Base::DataStreamOut<std::vector<cv::Point> > out_vanishingPoints;
 
 	// Handlers
 
 	// Properties
-	Base::Property<float> collinear_thresh;
-	Base::Property<int> clusters;
+	Base::Property<int> vanishing_points;
+	Base::Property<int> consensus_threshold;
+	Base::Property<int> hypotheses;
 
 	
 	// Handlers
-	void improveLinesProcessor();
+	void VanishingPointsProcessor();
 
 };
 
-} //: namespace ImproveLines
+} //: namespace VanishingPoints
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("ImproveLines", Processors::ImproveLines::ImproveLines)
+REGISTER_COMPONENT("VanishingPoints", Processors::VanishingPoints::VanishingPoints)
 
-#endif /* IMPROVELINES_HPP_ */
+#endif /* VANISHINGPOINTS_HPP_ */

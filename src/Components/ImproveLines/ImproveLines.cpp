@@ -13,6 +13,9 @@
 #include <boost/bind.hpp>
 #include <algorithm>
 
+#include <iostream>
+#include <fstream>
+
 namespace Processors {
 namespace ImproveLines {
 
@@ -44,6 +47,7 @@ void ImproveLines::prepareInterface() {
 
 bool ImproveLines::onInit() {
 
+
 	return true;
 }
 
@@ -56,6 +60,7 @@ bool ImproveLines::onStop() {
 }
 
 bool ImproveLines::onStart() {
+
 	return true;
 }
 
@@ -102,7 +107,7 @@ bool areCollinear(cv::Vec4i line0, cv::Vec4i line1) {
 					getTriangleArea(line1[0],line1[1],line1[2],line1[3],line0[0],line0[1])+
 					getTriangleArea(line1[0],line1[1],line1[2],line1[3],line0[2],line0[3]);
 	float length = getLength(line0)+getLength(line1);
-	bool collinear = area/length<10.0;
+	bool collinear = area/length<12.0;
 
 }
 
@@ -135,7 +140,7 @@ cv::Vec4i findLongestLine(vector<cv::Point> &points) {
 bool areClose(cv::Vec4i line0, cv::Vec4i line1) {
 	float connectorLength = getLength(cv::Point((line0[0]+line0[2])/2.0,(line0[1]+line0[3])/2.0),
 										cv::Point((line1[0]+line1[2])/2.0,(line1[1]+line1[3])/2.0));
-	if(connectorLength < 0.8*(getLength(line0)+getLength(line1))) return true;
+	if(connectorLength < 0.9*(getLength(line0)+getLength(line1))) return true;
 }
 
 void connectLines(std::vector<cv::Vec4i> &lines, std::vector<float> &angles) {
@@ -192,59 +197,45 @@ void removeShort(std::vector<cv::Vec4i> &lines, int rows, int cols) {
 
 }
 
-float getMean(std::vector<float> &data) {
-	float sum = 0.0;
-	for(int i = 0; i<data.size(); ++i) {
-		sum += data[i];
+/*float countWk(std::vector<std::vector<float> > &angle_groups) {
+	float Wk = 0.0;
+	for(int g=0; g<angle_groups.size(); ++g) {
+		float Dr = 0.0;
+		std::vector<float> data = angle_groups[g];
+		for(int i=0; i<data.size()-1; ++i) {
+			for(int j=i+1; j<data.size(); ++j) {
+				Dr += (data[i]-data[j])*(data[i]-data[j]);
+			}			
+		}
+		Wk += Dr/float(2*data.size());
 	}
-	return sum/float(data.size());
+	return Wk;
 }
 
-float getVariance(std::vector<float> &data) {
 
-	float mean = getMean(data);
-	float sumSquareSub = 0.0;
-	for(int i = 0; i<data.size(); ++i) {
-		sumSquareSub += (data[i]-mean)*(data[i]-mean);
-	}
-	return sumSquareSub/float(data.size());
-
-}
-
-float findMin(std::vector<float> &data) {
-	return *std::min_element(data.begin(),data.end());
-}
-
-float findMax(std::vector<float> &data) {
-	return *std::max_element(data.begin(),data.end());
-}
-
-void leaveVerticalPerspective(std::vector<cv::Vec4i> &lines, std::vector<float> &angles, int clusters) {
+float leaveVerticalPerspective(std::vector<cv::Vec4i> &lines, std::vector<float> &angles, int clusters) {
 	cv::Mat mat_angles(angles.size(), 1, CV_32FC1);
 	for(int i = 0; i < angles.size(); ++i) {
 		mat_angles.at<float>(i) = angles[i];
 	}
-	cv::Mat centers, labels;
+	cv::Mat centers;
+	cv::Mat labels;
 	cv::kmeans(mat_angles,clusters,labels,
 		cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT,
 			10, M_PI/float(clusters)),3,cv::KMEANS_PP_CENTERS, centers);
 
 	std::vector<std::vector<float> > angle_groups(clusters);
-	//angle_groups.reserve(clusters);
 	for(int i=0; i<mat_angles.rows; ++i) {
-		angle_groups[labels.at<float>(i)].push_back(mat_angles.at<float>(i));
+		angle_groups[labels.at<int>(i)].push_back(mat_angles.at<float>(i));
 	}
 
-	std::cout<<"\n\n*****";
-	for(int i=0; i<angle_groups.size(); ++i) {
-		//std::cout<<findMin(angle_groups[i])<<"-"<<findMax(angle_groups[i])<<", ";
-		std::cout<<angle_groups[i].size();
-	}
-	std::cout<<"******\n\n";
+	
+	return countWk(angle_groups);
 
 
 
-}
+
+}*/
 
 void ImproveLines::improveLinesProcessor() {
 
@@ -253,11 +244,7 @@ void ImproveLines::improveLinesProcessor() {
 	std::vector<float> angles = getAngles(lines);
 
 	connectLines(lines,angles);
-	removeShort(lines, img.rows, img.cols);
-	leaveVerticalPerspective(lines,angles,clusters);
-
-
-	
+	removeShort(lines, img.rows, img.cols);	
 
 	Types::DrawableContainer c;
 	for( size_t i = 0; i < lines.size(); i++ )
