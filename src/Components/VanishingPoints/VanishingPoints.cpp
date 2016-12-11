@@ -71,40 +71,146 @@ bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	p = cv::Point2f(line1[0],line1[1]) + d1*t1;
 	return true;
 
-
-
 }
+
+float getSquareDistance(cv::Point2f p0, cv::Point2f p1) {
+	return (p0.x-p1.x)*(p0.x-p1.x) + (p0.y-p1.y)*(p0.y-p1.y);
+}
+
+bool areConsistent(cv::Vec4i line, cv::Point2f v_point, int threshold) {
+	cv::Point2f centroid = cv::Point2f((line[0]+line[2])/2.0,(line[1]+line[3])/2.0);
+	float x1 = centroid.x;
+	float y1 = centroid.y;
+
+	float x2 = v_point.x;
+	float y2 = v_point.y;
+
+	float dist0 = getSquareDistance(cv::Point2f(line[0],line[1]),v_point);
+	float dist1 = getSquareDistance(cv::Point2f(line[2],line[3]),v_point);
+
+	float x,y;
+	if(dist0 > dist1) {
+		x = line[0];
+		y = line[1];
+	}
+	else {
+		x = line[2];
+		y = line[3];
+	}
+
+	float A = x - x1;
+	float B = y - y1;
+	float C = x2 - x1;
+	float D = y2 - y1;
+
+	float distance = fabs(A*D-C*B)/sqrt(C*C+D*D);
+
+	if(distance <= threshold) return true;
+	
+	return false;
+}
+
+int cardinalityOfSumOfSets(std::vector<bool> &set1, std::vector<bool> &set2) {
+	int cardinality = 0;
+	for(int i=0; i<set1.size() && i<set2.size(); ++i) {
+		if(set1[i] || set2[i]) {
+			cardinality += 1;
+		}
+	}
+	return cardinality;
+}
+
+int cardinalityOfIntersectionOfSets(std::vector<bool> &set1, std::vector<bool> &set2) {
+	int cardinality = 0;
+	for(int i=0; i<set1.size() && i<set2.size(); ++i) {
+		if(set1[i] == set2[i] && set1[i] == true) cardinality++;
+	}
+	return cardinality;
+}
+
+float jaccardDistance(std::vector<bool> &set1, std::vector<bool> &set2) {
+	float sum = float(cardinalityOfSumOfSets(set1, set2));
+	float intersection = float(cardinalityOfIntersectionOfSets(set1, set2));
+	return (sum - intersection)/sum;
+}
+
+bool allJaccartDistEqualOne(std::vector<std::vector<bool> > &clusters) {
+	for(int i=0; i<clusters.size()-1; ++i) {
+		for(int j=i+1; j<clusters.size(); ++j) {
+			if(jaccardDistance(clusters[i],clusters[j]) < 1.0) return false;
+		}
+	}
+	return true;
+}
+
+void mergeClusters(std::vector<std::vector<bool> > &clusters, int c1, int c2) {
+	for(int i=0; i<clusters[c1].size(); ++i) {
+		clusters[c1][i] = clusters[c1][i] || clusters[c2][i];
+	}
+	clusters.erase(clusters.begin()+c2);
+}
+
+
 
 void VanishingPoints::VanishingPointsProcessor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();
 
-	std::vector<std::pair<cv::Vec4i,cv::Vec4i> > samples(hypotheses);
+	
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dis(0, lines.size()-1);
 
-	for(int i=0; i<hypotheses; ++i) {
-		samples[i] = std::make_pair(lines[dis(gen)],lines[dis(gen)]);
-	}
-
+	std::vector<std::pair<cv::Vec4i,cv::Vec4i> > samples(hypotheses);
+	std::vector<std::pair<int,int> > samples_idx(hypotheses);
 	std::vector<cv::Point2f> vanishing_points_hypotheses(hypotheses);
+
+	int hyp_number = 0;
 	for(int i=0; i<hypotheses; ++i) {
 		cv::Point2f v;
-		if(getIntersectionPoint(samples[i].first,samples[i].second,v)) {
-			vanishing_points_hypotheses[i] = v;
+		int l1 = dis(gen);
+		int l2 = dis(gen);
+		std::pair<cv::Vec4i,cv::Vec4i> sample = std::make_pair(lines[l1],lines[l2]);
+		std::pair<int,int> idx = std::make_pair(l1,l2);
+		while(!getIntersectionPoint(sample.first,sample.second,v)) {
+			l1 = dis(gen);
+			l2 = dis(gen);
+			sample = std::make_pair(lines[l1],lines[l2]);
+			idx = std::make_pair(l1,l2);
 		}
-		std::cout<<"\n";
+		samples[i] = sample;
+		samples_idx[i] = idx;
+		vanishing_points_hypotheses[i] = v;
 	}
 
-	bool preference_matrix [lines.size()][int(hypotheses)];
+	std::vector<std::vector<bool> > preference_matrix(lines.size());
 
+	for(int i=0; i<lines.size(); ++i) {
+		for(int j=0; j<int(hypotheses); ++j) {
+			preference_matrix[i].push_back(areConsistent(lines[i],vanishing_points_hypotheses[j],consensus_threshold));
+		}
+	}
 
-	
+	std::vector<std::vector<bool> > clusters = preference_matrix;
 
-
-
+	while(!allJaccartDistEqualOne(clusters) && clusters.size()>2) {
+		int min1 = 0;
+		int min2 = 1;
+		float minJDist = jaccardDistance(clusters[min1], clusters[min2]);
+		for(int i=0; i<clusters.size()-1; ++i) {
+			for(int j=i+1; j<clusters.size(); ++j) {
+				float dist = jaccardDistance(clusters[i], clusters[j]);
+				if(dist < minJDist) {
+					min1 = i;
+					min2 = j;
+					minJDist = dist;
+				}
+			}
+		}
+		mergeClusters(clusters, min1, min2);
+	}
+	std::cout<<"**********\n\n"<<clusters.size()<<" "<<jaccardDistance(clusters[0],clusters[1])<<"\n\n********";
 
 }
 
