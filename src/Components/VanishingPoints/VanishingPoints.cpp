@@ -13,6 +13,8 @@
 #include <boost/bind.hpp>
 
 #include <random>
+#include "Types/DrawableContainer.hpp"
+#include "Types/Line.hpp"
 
 namespace Processors {
 namespace VanishingPoints {
@@ -36,6 +38,7 @@ void VanishingPoints::prepareInterface() {
 	registerStream("in_lines", &in_lines);
 	registerStream("out_linesVecs", &out_linesVecs);
 	registerStream("out_vanishingPoints", &out_vanishingPoints);
+	registerStream("out_linesDrawable", &out_linesDrawable);
 	// Register handlers
 	registerHandler("VanishingPointsProcessor", boost::bind(&VanishingPoints::VanishingPointsProcessor, this));
 	addDependency("VanishingPointsProcessor", &in_lines);
@@ -110,37 +113,19 @@ bool areConsistent(cv::Vec4i line, cv::Point2f v_point, int threshold) {
 	return false;
 }
 
-int cardinalityOfSumOfSets(std::vector<bool> &set1, std::vector<bool> &set2) {
-	int cardinality = 0;
-	for(int i=0; i<set1.size() && i<set2.size(); ++i) {
-		if(set1[i] || set2[i]) {
-			cardinality += 1;
-		}
-	}
-	return cardinality;
-}
-
-int cardinalityOfIntersectionOfSets(std::vector<bool> &set1, std::vector<bool> &set2) {
-	int cardinality = 0;
-	for(int i=0; i<set1.size() && i<set2.size(); ++i) {
-		if(set1[i] == set2[i] && set1[i] == true) cardinality++;
-	}
-	return cardinality;
-}
-
 float jaccardDistance(std::vector<bool> &set1, std::vector<bool> &set2) {
-	float sum = float(cardinalityOfSumOfSets(set1, set2));
-	float intersection = float(cardinalityOfIntersectionOfSets(set1, set2));
-	return (sum - intersection)/sum;
-}
 
-bool allJaccartDistEqualOne(std::vector<std::vector<bool> > &clusters) {
-	for(int i=0; i<clusters.size()-1; ++i) {
-		for(int j=i+1; j<clusters.size(); ++j) {
-			if(jaccardDistance(clusters[i],clusters[j]) < 1.0) return false;
+	int sum = 0;
+	int intersection = 0;
+	for(int i=0; i<set1.size(); ++i) {
+		if(set1[i] || set2[i]) {
+			sum++;
+			if(set1[i] && set2[i]) intersection++;
 		}
 	}
-	return true;
+	float sumf = float(sum);
+	float intersectionf = float(intersection);
+	return (sumf - intersectionf)/sumf;
 }
 
 void mergeClusters(std::vector<std::vector<bool> > &clusters, int c1, int c2) {
@@ -150,67 +135,107 @@ void mergeClusters(std::vector<std::vector<bool> > &clusters, int c1, int c2) {
 	clusters.erase(clusters.begin()+c2);
 }
 
+void getVPoints(std::vector<cv::Point2f> &vanishing_points_hypotheses,
+	std::vector<cv::Vec4i> &lines) {
 
-
-void VanishingPoints::VanishingPointsProcessor() {
-
-	std::vector<cv::Vec4i> lines = in_lines.read();
-
-	
+	int hypotheses = vanishing_points_hypotheses.size();
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dis(0, lines.size()-1);
 
-	std::vector<std::pair<cv::Vec4i,cv::Vec4i> > samples(hypotheses);
-	std::vector<std::pair<int,int> > samples_idx(hypotheses);
-	std::vector<cv::Point2f> vanishing_points_hypotheses(hypotheses);
-
-	int hyp_number = 0;
 	for(int i=0; i<hypotheses; ++i) {
 		cv::Point2f v;
 		int l1 = dis(gen);
 		int l2 = dis(gen);
 		std::pair<cv::Vec4i,cv::Vec4i> sample = std::make_pair(lines[l1],lines[l2]);
-		std::pair<int,int> idx = std::make_pair(l1,l2);
 		while(!getIntersectionPoint(sample.first,sample.second,v)) {
 			l1 = dis(gen);
 			l2 = dis(gen);
 			sample = std::make_pair(lines[l1],lines[l2]);
-			idx = std::make_pair(l1,l2);
 		}
-		samples[i] = sample;
-		samples_idx[i] = idx;
 		vanishing_points_hypotheses[i] = v;
 	}
 
-	std::vector<std::vector<bool> > preference_matrix(lines.size());
+}
+
+void VanishingPoints::VanishingPointsProcessor() {
+
+	std::vector<cv::Vec4i> lines = in_lines.read();	
+
+	std::vector<cv::Point2f> vanishing_points_hypotheses(hypotheses);
+
+	getVPoints(vanishing_points_hypotheses, lines);
+	
+
+	std::vector<std::vector<bool> > clusters(lines.size());
 
 	for(int i=0; i<lines.size(); ++i) {
 		for(int j=0; j<int(hypotheses); ++j) {
-			preference_matrix[i].push_back(areConsistent(lines[i],vanishing_points_hypotheses[j],consensus_threshold));
+			clusters[i].push_back(areConsistent(lines[i],vanishing_points_hypotheses[j],consensus_threshold));
 		}
 	}
 
-	std::vector<std::vector<bool> > clusters = preference_matrix;
+	std::vector<std::vector<float> > jaccardDists(clusters.size());
 
-	while(!allJaccartDistEqualOne(clusters) && clusters.size()>2) {
-		int min1 = 0;
-		int min2 = 1;
-		float minJDist = jaccardDistance(clusters[min1], clusters[min2]);
-		for(int i=0; i<clusters.size()-1; ++i) {
-			for(int j=i+1; j<clusters.size(); ++j) {
-				float dist = jaccardDistance(clusters[i], clusters[j]);
-				if(dist < minJDist) {
+	//uwaga, drugi indeks musi byc mniejszy
+	float minJD = 2.0;
+	int min1, min2;
+	for(int j=0; j<clusters.size()-1; ++j) {
+		for(int i=j+1; i<clusters.size(); ++i) {
+			jaccardDists[i].push_back(jaccardDistance(clusters[i],clusters[j]));
+			if(jaccardDists[i][j] < minJD) {
+				minJD = jaccardDists[i][j];
+				min1 = i;
+				min2 = j;
+			}
+		}
+	}
+
+	while(minJD < 0.9 && clusters.size()>2) {
+		mergeClusters(clusters, min2, min1);
+		jaccardDists.erase(jaccardDists.begin()+min1);
+		for(int i=0; i<jaccardDists.size(); ++i) {
+			if(i>min2) {
+				jaccardDists[i][min2] = jaccardDistance(clusters[i],clusters[min2]);
+			}
+			if(i>=min1) {
+				jaccardDists[i].erase(jaccardDists[i].begin()+min1);
+			}
+		}
+		minJD = 2.0;
+		for(int i=0; i<jaccardDists.size(); ++i) {
+			for(int j=0; j<jaccardDists[i].size(); ++j) {
+				if(jaccardDists[i][j]<minJD) {
+					minJD = jaccardDists[i][j];
 					min1 = i;
 					min2 = j;
-					minJDist = dist;
 				}
 			}
 		}
-		mergeClusters(clusters, min1, min2);
 	}
+	
 	std::cout<<"**********\n\n"<<clusters.size()<<" "<<jaccardDistance(clusters[0],clusters[1])<<"\n\n********";
+
+	Types::DrawableContainer c;
+	std::vector<cv::Scalar> colors{cv::Scalar(0,0,255),cv::Scalar(0,128,255),cv::Scalar(0,255,255),cv::Scalar(0,255,128),cv::Scalar(255,128,0),cv::Scalar(0,0,255),cv::Scalar(255,0,127),
+		cv::Scalar(255,0,255),cv::Scalar(0,102,0),cv::Scalar(204,204,0)};
+	for(int i=0; i<clusters.size(); ++i) {
+		for(int j=0; j<clusters[i].size(); ++j) {
+			if(clusters[i][j]) {
+				cv::Scalar color;
+				if(i < colors.size()) {
+					color = colors[i];
+				} 
+				else {
+					color = cv::Scalar(0,0,0);
+				}
+				/*cv::Vec4i line2add = lines[]
+				c.add(new Types::Line(cv::Point()))*/
+			}
+			
+		}
+	}
 
 }
 

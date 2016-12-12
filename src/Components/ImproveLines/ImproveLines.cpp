@@ -244,7 +244,7 @@ void ImproveLines::improveLinesProcessor() {
 	std::vector<float> angles = getAngles(lines);
 
 	connectLines(lines,angles);
-	removeShort(lines, img.rows, img.cols);	
+	//removeShort(lines, img.rows, img.cols);	
 
 	Types::DrawableContainer c;
 	for( size_t i = 0; i < lines.size(); i++ )

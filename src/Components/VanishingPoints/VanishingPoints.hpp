@@ -14,6 +14,8 @@
 #include "EventHandler2.hpp"
 
 #include <opencv2/opencv.hpp>
+#include "Types/Line.hpp"
+#include "Types/DrawableContainer.hpp"
 
 
 namespace Processors {
@@ -73,6 +75,7 @@ protected:
 	// Output data streams
 	Base::DataStreamOut<std::vector<std::vector<cv::Vec4i> > > out_linesVecs;
 	Base::DataStreamOut<std::vector<cv::Point> > out_vanishingPoints;
+	Base::DataStreamOut <Types::DrawableContainer> out_linesDrawable;
 
 	// Handlers
 
