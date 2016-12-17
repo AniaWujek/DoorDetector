@@ -23,9 +23,12 @@ VanishingPoints::VanishingPoints(const std::string & name) :
 		Base::Component(name) , 
 		vanishing_points("vanishing_points", 3), 
 		consensus_threshold("consensus_threshold", 2), 
-		hypotheses("hypotheses", 500) {
+		hypotheses("hypotheses", 100) {
 	registerProperty(vanishing_points);
 	registerProperty(consensus_threshold);
+
+	hypotheses.addConstraint("50");
+	hypotheses.addConstraint("500");
 	registerProperty(hypotheses);
 
 }
@@ -62,16 +65,41 @@ bool VanishingPoints::onStart() {
 	return true;
 }
 
+bool pointClose2Line(cv::Vec4i line, cv::Point2f p) {
+	int minX, minY, maxX, maxY;
+	minX = std::min(line[0],line[2]);
+	minY = std::min(line[1],line[3]);
+	maxX = std::max(line[0],line[2]);
+	maxY = std::max(line[1],line[3]);
+
+	if(p.x>=minX && p.x<=maxX && p.y>=minY && p.y<=maxY) return true;
+	else return false;
+}
+
 bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
-	cv::Point2f x = cv::Point2f(line2[0],line2[1])-cv::Point2f(line1[0],line1[1]);
-	cv::Point2f d1 = cv::Point2f(line1[2],line1[3])-cv::Point2f(line1[0],line1[1]);
-	cv::Point2f d2 = cv::Point2f(line2[2],line2[3])-cv::Point2f(line2[0],line2[1]);
+	
+	float A1 = line1[1]-line1[3];
+	float B1 = line1[2]-line1[0];
+	float C1 = -(line1[0]*line1[3] - line1[2]*line1[1]);
+	float A2 = line2[1]-line2[3];
+	float B2 = line2[2]-line2[0];
+	float C2 = -(line2[0]*line2[3] - line2[2]*line2[1]);
+	float D = A1*B2 - B1*A2;
+	float Dx = C1*B2 - B1*C2;
+	float Dy = A1*C2 - C1*A2;
 
-	float cross = d1.x*d2.y - d1.y*d2.x;
-	if(fabs(cross) < 1e-8) return false;
 
-	double t1 = (x.x*d2.y - x.y*d2.x)/cross;
-	p = cv::Point2f(line1[0],line1[1]) + d1*t1;
+
+	if(D>0.0 || D<0.0) {
+		p.x = Dx/D;
+		p.y = Dy/D;
+	}
+	else return false;
+
+
+	//if(pointClose2Line(line1, p) || pointClose2Line(line2, p)) return false;
+	if(p.x>=0 && p.x<2304 && p.y>=0 && p.y<1728) return false;
+
 	return true;
 
 }
@@ -135,8 +163,7 @@ void mergeClusters(std::vector<std::vector<bool> > &clusters, int c1, int c2) {
 	clusters.erase(clusters.begin()+c2);
 }
 
-void getVPoints(std::vector<cv::Point2f> &vanishing_points_hypotheses,
-	std::vector<cv::Vec4i> &lines) {
+void getVPoints(std::vector<cv::Point2f> &vanishing_points_hypotheses, std::vector<cv::Vec4i> &lines) {
 
 	int hypotheses = vanishing_points_hypotheses.size();
 
@@ -192,8 +219,16 @@ void VanishingPoints::VanishingPointsProcessor() {
 		}
 	}
 
-	while(minJD < 0.9 && clusters.size()>2) {
+	std::vector<std::vector<cv::Vec4i> > linesClusters;
+	for(int i=0; i<lines.size(); ++i) {
+		std::vector<cv::Vec4i> linesVec = {lines[i]};
+		linesClusters.push_back(linesVec);
+	}
+
+	while(minJD < 0.7 && clusters.size()>6) {
 		mergeClusters(clusters, min2, min1);
+		linesClusters[min2].insert(linesClusters[min2].end(),linesClusters[min1].begin(),linesClusters[min1].end());
+		linesClusters.erase(linesClusters.begin()+min1);
 		jaccardDists.erase(jaccardDists.begin()+min1);
 		for(int i=0; i<jaccardDists.size(); ++i) {
 			if(i>min2) {
@@ -214,28 +249,31 @@ void VanishingPoints::VanishingPointsProcessor() {
 			}
 		}
 	}
+
+	for(int i=linesClusters.size()-1; i>=0; --i) {
+		if(linesClusters[i].size()<2) linesClusters.erase(linesClusters.begin()+i);
+	}
 	
-	std::cout<<"**********\n\n"<<clusters.size()<<" "<<jaccardDistance(clusters[0],clusters[1])<<"\n\n********";
 
 	Types::DrawableContainer c;
 	std::vector<cv::Scalar> colors{cv::Scalar(0,0,255),cv::Scalar(0,128,255),cv::Scalar(0,255,255),cv::Scalar(0,255,128),cv::Scalar(255,128,0),cv::Scalar(0,0,255),cv::Scalar(255,0,127),
 		cv::Scalar(255,0,255),cv::Scalar(0,102,0),cv::Scalar(204,204,0)};
-	for(int i=0; i<clusters.size(); ++i) {
-		for(int j=0; j<clusters[i].size(); ++j) {
-			if(clusters[i][j]) {
-				cv::Scalar color;
-				if(i < colors.size()) {
-					color = colors[i];
-				} 
-				else {
-					color = cv::Scalar(0,0,0);
-				}
-				/*cv::Vec4i line2add = lines[]
-				c.add(new Types::Line(cv::Point()))*/
+	for(int i=0; i<linesClusters.size(); ++i) {
+		for(int j=0; j<linesClusters[i].size(); ++j) {
+			
+			cv::Scalar color;
+			if(i < colors.size()) {
+				color = colors[i];
+			} 
+			else {
+				color = cv::Scalar(0,0,0);
 			}
+			cv::Vec4i line = linesClusters[i][j];
+			c.add(new Types::Line(cv::Point(line[0],line[1]), cv::Point(line[2],line[3]),color));
 			
 		}
 	}
+	out_linesDrawable.write(c);
 
 }
 

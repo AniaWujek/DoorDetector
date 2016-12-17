@@ -50,15 +50,23 @@
 				</Component>
 
 				<Component name="ImproveLines" type="DoorDetector:ImproveLines" priority="8" bump="0">
-					<param name="clusters">1</param>
+					<param name="closeRatio">0.55</param>
+					<param name="collinearRatio">0.005</param>
+					<param name="shortRatio">0.0</param>
 				</Component>
 
-				<Component name="VanishingPoints" type="DoorDetector:VanishingPoints" priority="9" bump="0">
+				<Component name="ImproveLines2" type="DoorDetector:ImproveLines" priority="9" bump="0">
+					<param name="closeRatio">1.0</param>
+					<param name="collinearRatio">0.005</param>
+					<param name="shortRatio">0.15</param>
+				</Component>
+
+				<Component name="VanishingPoints" type="DoorDetector:VanishingPoints" priority="10" bump="0">
 				</Component>
 				
-				<Component name="Window" type="CvBasic:CvWindow" priority="10" bump="0">
-					<param name="count">3</param>
-					<param name="title">zwykle,poprawione,canny</param>
+				<Component name="Window" type="CvBasic:CvWindow" priority="11" bump="0">
+					<param name="count">2</param>
+					<param name="title">ori, lines</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -69,39 +77,47 @@
 	<!-- pipes connecting datastreams -->
 	<DataStreams>
 		<Source name="Sequence.out_img">
-			<sink>GaussianBlur.in_img</sink>
-			<sink>Window.in_img1</sink>
-			<sink>Window.in_img0</sink>
+			<sink>GaussianBlur.in_img</sink>			
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
 			<sink>ImproveLines.in_img</sink>
+			<sink>ImproveLines2.in_img</sink>
 		</Source>
 		<Source name="ColorConv.out_img">
-			<sink>Histogram.in_img</sink>
+			<sink>Histogram.in_img</sink>			
+			<sink>Window.in_img0</sink>
+			<sink>Window.in_img1</sink>
 		</Source>
 		<Source name="Histogram.out_img">
 			<sink>Canny.in_img</sink>
 		</Source>
 		<Source name="Canny.out_img">
+			
 			<sink>Morphology.in_img</sink>
 		</Source>
 		<Source name="Morphology.out_img">
 			<sink>Lines.in_img</sink>
-			<sink>Window.in_img2</sink>
+			
 		</Source>
 		<Source name="Lines.out_lines">
 			<sink>ImproveLines.in_lines</sink>
 		</Source>
 		<Source name="ImproveLines.out_lines">
+			<sink>ImproveLines2.in_lines</sink>
+		</Source>
+		<!--<Source name="ImproveLines.out_lines">
 			<sink>VanishingPoints.in_lines</sink>
-		</Source>
+		</Source>-->
 		<Source name="Lines.out_linesDrawable">
-			<sink>Window.in_draw0</sink>
-		</Source>
-		<Source name="ImproveLines.out_linesDrawable">
 			<sink>Window.in_draw1</sink>
 		</Source>
+		<Source name="ImproveLines.out_linesDrawable">
+			<!--<sink>Window.in_draw1</sink>-->
+		</Source>
+		<!--<Source name="ImproveLines2.out_linesDrawable">
+			<sink>Window.in_draw2</sink>
+		</Source>-->
 	</DataStreams>
 </Task>
 

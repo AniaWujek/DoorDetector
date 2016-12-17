@@ -82,9 +82,9 @@ protected:
 	// Handlers
 
 	// Properties
-	Base::Property<float> collinear_thresh;
-	Base::Property<int> clusters;
-
+	Base::Property<float> collinearRatio;
+	Base::Property<float> shortRatio;
+	Base::Property<float> closeRatio;
 	
 	// Handlers
 	void improveLinesProcessor();
