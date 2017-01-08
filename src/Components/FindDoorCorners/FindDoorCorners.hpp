@@ -4,8 +4,8 @@
  * \author Anna
  */
 
-#ifndef VANISHINGPOINTS_HPP_
-#define VANISHINGPOINTS_HPP_
+#ifndef FINDDOORCORNERS_HPP_
+#define FINDDOORCORNERS_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
@@ -14,30 +14,28 @@
 #include "EventHandler2.hpp"
 
 #include <opencv2/opencv.hpp>
-#include "Types/Line.hpp"
-#include "Types/DrawableContainer.hpp"
 
 
 namespace Processors {
-namespace VanishingPoints {
+namespace FindDoorCorners {
 
 /*!
- * \class VanishingPoints
- * \brief VanishingPoints processor class.
+ * \class FindDoorCorners
+ * \brief FindDoorCorners processor class.
  *
  * 
  */
-class VanishingPoints: public Base::Component {
+class FindDoorCorners: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	VanishingPoints(const std::string & name = "VanishingPoints");
+	FindDoorCorners(const std::string & name = "FindDoorCorners");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~VanishingPoints();
+	virtual ~FindDoorCorners();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -70,34 +68,32 @@ protected:
 
 
 	// Input data streams
+	Base::DataStreamIn<cv::Mat> in_img;
 	Base::DataStreamIn<std::vector<cv::Vec4i> > in_lines;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<std::vector<cv::Vec4i> > > out_linesVecs;
-	Base::DataStreamOut<std::vector<cv::Point> > out_vanishingPoints;
-	Base::DataStreamOut <Types::DrawableContainer> out_linesDrawable;
+	Base::DataStreamOut<std::vector<cv::Point> > out_points;
+	Base::DataStreamOut<std::vector<std::pair<int,int> > > out_linesPairs;
+	Base::DataStreamOut<cv::Mat> out_img;
 
 	// Handlers
 
 	// Properties
-	Base::Property<int> vanishing_points;
-	Base::Property<int> consensus_threshold;
-	Base::Property<int> hypotheses;
-	Base::Property<float> jaccard_thresh;
-	Base::Property<bool> auto_hypotheses;
+	Base::Property<float> k_param;
+	Base::Property<int> window_size;
 
 	
 	// Handlers
-	void VanishingPointsProcessor();
+	void findDoorCorners_processor();
 
 };
 
-} //: namespace VanishingPoints
+} //: namespace FindDoorCorners
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("VanishingPoints", Processors::VanishingPoints::VanishingPoints)
+REGISTER_COMPONENT("FindDoorCorners", Processors::FindDoorCorners::FindDoorCorners)
 
-#endif /* VANISHINGPOINTS_HPP_ */
+#endif /* FINDDOORCORNERS_HPP_ */

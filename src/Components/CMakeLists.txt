@@ -6,3 +6,5 @@ ADD_COMPONENT(SharpenMask)
 ADD_COMPONENT(ImproveLines)
 
 ADD_COMPONENT(VanishingPoints)
+
+ADD_COMPONENT(FindDoorCorners)

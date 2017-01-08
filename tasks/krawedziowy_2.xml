@@ -6,7 +6,7 @@
 	<!-- task definition -->
 	<Subtasks>
 		<Subtask name="Main">
-			<Executor name="Processing"  period="1">
+			<Executor name="Processing"  period="5">
 				<Component name="Sequence" type="CvBasic:Sequence" priority="1" bump="-1">
 					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/srednie/</param>
 					<param name="sequence.pattern">.*\.JPG</param>
@@ -61,12 +61,19 @@
 					<param name="shortRatio">0.15</param>
 				</Component>
 
-				<Component name="VanishingPoints" type="DoorDetector:VanishingPoints" priority="10" bump="0">
+				<Component name="Corners" type="DoorDetector:FindDoorCorners" priority="10" bump="0">
+					<param name="k_param">0.1</param>
+				</Component>
+
+				<Component name="VanishingPoints" type="DoorDetector:VanishingPoints" priority="11" bump="0">
+					<param name="auto_hypotheses">0</param>
+					<param name="hypotheses">300</param>
+					<param name="jaccard_thresh">0.85</param>
 				</Component>
 				
-				<Component name="Window" type="CvBasic:CvWindow" priority="11" bump="0">
-					<param name="count">2</param>
-					<param name="title">ori, lines</param>
+				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
+					<param name="count">3</param>
+					<param name="title">corners,vanish,lines</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -77,7 +84,9 @@
 	<!-- pipes connecting datastreams -->
 	<DataStreams>
 		<Source name="Sequence.out_img">
-			<sink>GaussianBlur.in_img</sink>			
+			<sink>GaussianBlur.in_img</sink>
+			<sink>Window.in_img1</sink>	
+			<sink>Window.in_img2</sink>			
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
@@ -86,11 +95,12 @@
 		</Source>
 		<Source name="ColorConv.out_img">
 			<sink>Histogram.in_img</sink>			
-			<sink>Window.in_img0</sink>
-			<sink>Window.in_img1</sink>
+			
 		</Source>
 		<Source name="Histogram.out_img">
 			<sink>Canny.in_img</sink>
+			<sink>Corners.in_img</sink>
+			
 		</Source>
 		<Source name="Canny.out_img">
 			
@@ -101,23 +111,27 @@
 			
 		</Source>
 		<Source name="Lines.out_lines">
-			<sink>ImproveLines.in_lines</sink>
+			<sink>ImproveLines.in_lines</sink>			
+		</Source>
+		<Source name="Lines.out_linesDrawable">
+			<sink>Window.in_draw2</sink>
 		</Source>
 		<Source name="ImproveLines.out_lines">
 			<sink>ImproveLines2.in_lines</sink>
 		</Source>
-		<!--<Source name="ImproveLines.out_lines">
+		<Source name="ImproveLines2.out_lines">
 			<sink>VanishingPoints.in_lines</sink>
-		</Source>-->
-		<Source name="Lines.out_linesDrawable">
+			<sink>Corners.in_lines</sink>
+		</Source>
+		<Source name="Corners.out_img">
+			<sink>Window.in_img0</sink>
+		</Source>
+		<Source name="ImproveLines2.out_linesDrawable">
+			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="VanishingPoints.out_linesDrawable">
 			<sink>Window.in_draw1</sink>
 		</Source>
-		<Source name="ImproveLines.out_linesDrawable">
-			<!--<sink>Window.in_draw1</sink>-->
-		</Source>
-		<!--<Source name="ImproveLines2.out_linesDrawable">
-			<sink>Window.in_draw2</sink>
-		</Source>-->
 	</DataStreams>
 </Task>
 

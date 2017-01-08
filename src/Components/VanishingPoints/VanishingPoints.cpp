@@ -23,13 +23,18 @@ VanishingPoints::VanishingPoints(const std::string & name) :
 		Base::Component(name) , 
 		vanishing_points("vanishing_points", 3), 
 		consensus_threshold("consensus_threshold", 2), 
-		hypotheses("hypotheses", 100) {
+		hypotheses("hypotheses", 100),
+		jaccard_thresh("jaccard_thresh", 0.7),
+		auto_hypotheses("auto_hypotheses", 1) {
 	registerProperty(vanishing_points);
 	registerProperty(consensus_threshold);
 
 	hypotheses.addConstraint("50");
 	hypotheses.addConstraint("500");
 	registerProperty(hypotheses);
+
+	registerProperty(jaccard_thresh);
+	registerProperty(auto_hypotheses);
 
 }
 
@@ -190,6 +195,12 @@ void VanishingPoints::VanishingPointsProcessor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();	
 
+	int h_size = hypotheses;
+	if(auto_hypotheses) {
+		h_size = 10*lines.size();
+		std::cout<<"\n*** "<<h_size<<" ***\n";
+	}
+
 	std::vector<cv::Point2f> vanishing_points_hypotheses(hypotheses);
 
 	getVPoints(vanishing_points_hypotheses, lines);
@@ -225,7 +236,7 @@ void VanishingPoints::VanishingPointsProcessor() {
 		linesClusters.push_back(linesVec);
 	}
 
-	while(minJD < 0.7 && clusters.size()>6) {
+	while(minJD < jaccard_thresh && clusters.size()>2) {
 		mergeClusters(clusters, min2, min1);
 		linesClusters[min2].insert(linesClusters[min2].end(),linesClusters[min1].begin(),linesClusters[min1].end());
 		linesClusters.erase(linesClusters.begin()+min1);
@@ -241,18 +252,43 @@ void VanishingPoints::VanishingPointsProcessor() {
 		minJD = 2.0;
 		for(int i=0; i<jaccardDists.size(); ++i) {
 			for(int j=0; j<jaccardDists[i].size(); ++j) {
-				if(jaccardDists[i][j]<minJD) {
-					minJD = jaccardDists[i][j];
-					min1 = i;
-					min2 = j;
+				//szukamy dwoch grup o min odleglosci
+				if(jaccardDists[i][j]<=minJD) {
+					//jesli jest jakas o mniejszej odleglosci
+					if(jaccardDists[i][j]<minJD) {
+						minJD = jaccardDists[i][j];	
+						min1 = i;
+						min2 = j;
+					}
+					//jesli jest o identycznej odleglosci jak aktualne minimum
+					else {
+						//jesli wsrod nowych jest grupa 1-elem to ma pierszenstwo
+						if(linesClusters[i].size()==1 || linesClusters[j].size()==1) {
+							minJD = jaccardDists[i][j];	
+							min1 = i;
+							min2 = j;
+						}
+						//jesli wsrod aktualnych nie ma grup 1-elem, a nowy zestaw w sumie ma mniej elementow, to ma pierwszenstwo
+						else if(linesClusters[min1].size()!=1 && linesClusters[min2].size()!=1 && linesClusters[i].size()+linesClusters[j].size() < linesClusters[min1].size()+linesClusters[min2].size()) {
+							minJD = jaccardDists[i][j];	
+							min1 = i;
+							min2 = j;
+						}
+					}
 				}
 			}
 		}
 	}
 
+
+
+	std::cout<<"\n\n "<<linesClusters.size();
+
 	for(int i=linesClusters.size()-1; i>=0; --i) {
 		if(linesClusters[i].size()<2) linesClusters.erase(linesClusters.begin()+i);
 	}
+
+	std::cout<<" "<<linesClusters.size()<<" \n\n";
 	
 
 	Types::DrawableContainer c;
