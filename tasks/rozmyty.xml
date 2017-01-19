@@ -66,9 +66,12 @@
 					<param name="window_size">15</param>
 				</Component>
 
+				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting" priority="11" bump="0">
+				</Component>
+
 				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
-					<param name="count">3</param>
-					<param name="title">corners,lines,improved</param>
+					<param name="count">2</param>
+					<param name="title">lines,fuzzy</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -81,8 +84,7 @@
 		<Source name="Sequence.out_img">
 			<sink>GaussianBlur.in_img</sink>
 			<sink>Window.in_img0</sink>	
-			<sink>Window.in_img1</sink>	
-			<sink>Window.in_img2</sink>			
+			<sink>FuzzyFitting.in_img</sink>		
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
@@ -104,23 +106,25 @@
 		</Source>
 		<Source name="Lines.out_lines">
 			<sink>ImproveLines.in_lines</sink>	
-
-		</Source>
-		<Source name="Lines.out_linesDrawable">
-			<sink>Window.in_draw1</sink>
 		</Source>
 		<Source name="ImproveLines.out_lines">
 			<sink>ImproveLines2.in_lines</sink>
 		</Source>
 		<Source name="ImproveLines2.out_lines">
 			<sink>Corners.in_lines</sink>
-
+			<sink>FuzzyFitting.in_lines</sink>
 		</Source>
 		<Source name="ImproveLines2.out_linesDrawable">
-			<sink>Window.in_draw2</sink>
-		</Source>
-		<Source name="Corners.out_cornersDrawable">
 			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="Corners.out_corners">
+			<sink>FuzzyFitting.in_corners</sink>
+		</Source>
+		<Source name="Corners.out_linesPairs">
+			<sink>FuzzyFitting.in_linesPairs</sink>
+		</Source>
+		<Source name="FuzzyFitting.out_img">
+			<sink>Window.in_img1</sink>
 		</Source>
 	</DataStreams>
 </Task>

@@ -4,40 +4,38 @@
  * \author Anna
  */
 
-#ifndef FINDDOORCORNERS_HPP_
-#define FINDDOORCORNERS_HPP_
+#ifndef LINESCORNERSFITTING_HPP_
+#define LINESCORNERSFITTING_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
-#include "Types/Line.hpp"
-#include "Types/DrawableContainer.hpp"
 
 #include <opencv2/opencv.hpp>
 
 
 namespace Processors {
-namespace FindDoorCorners {
+namespace LinesCornersFitting {
 
 /*!
- * \class FindDoorCorners
- * \brief FindDoorCorners processor class.
+ * \class LinesCornersFitting
+ * \brief LinesCornersFitting processor class.
  *
  * 
  */
-class FindDoorCorners: public Base::Component {
+class LinesCornersFitting: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	FindDoorCorners(const std::string & name = "FindDoorCorners");
+	LinesCornersFitting(const std::string & name = "LinesCornersFitting");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~FindDoorCorners();
+	virtual ~LinesCornersFitting();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -70,33 +68,32 @@ protected:
 
 
 	// Input data streams
+	Base::DataStreamIn<std::vector<cv::Vec4i>> in_lines;
+	Base::DataStreamIn<std::vector<cv::Point>> in_corners;
+	Base::DataStreamIn<std::vector<std::pair<int,int> > > in_linesPairs;
 	Base::DataStreamIn<cv::Mat> in_img;
-	Base::DataStreamIn<std::vector<cv::Vec4i> > in_lines;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Point> > out_corners;
-	Base::DataStreamOut<std::vector<std::pair<int,int> > > out_linesPairs;
+	Base::DataStreamOut<std::vector<std::vector<cv::Point> >> out_roiVec;
 	Base::DataStreamOut<cv::Mat> out_img;
-	Base::DataStreamOut <Types::DrawableContainer> out_cornersDrawable;
 
 	// Handlers
 
 	// Properties
-	Base::Property<float> k_param;
-	Base::Property<int> window_size;
+	Base::Property<float> prop;
 
 	
 	// Handlers
-	void findDoorCorners_processor();
+	void LinesCornersFitting_processor();
 
 };
 
-} //: namespace FindDoorCorners
+} //: namespace LinesCornersFitting
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("FindDoorCorners", Processors::FindDoorCorners::FindDoorCorners)
+REGISTER_COMPONENT("LinesCornersFitting", Processors::LinesCornersFitting::LinesCornersFitting)
 
-#endif /* FINDDOORCORNERS_HPP_ */
+#endif /* LINESCORNERSFITTING_HPP_ */

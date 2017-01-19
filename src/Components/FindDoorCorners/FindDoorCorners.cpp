@@ -32,9 +32,10 @@ void FindDoorCorners::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("in_img", &in_img);
 	registerStream("in_lines", &in_lines);
-	registerStream("out_points", &out_points);
+	registerStream("out_corners", &out_corners);
 	registerStream("out_linesPairs", &out_linesPairs);
 	registerStream("out_img", &out_img);
+	registerStream("out_cornersDrawable",&out_cornersDrawable);
 	// Register handlers
 	registerHandler("findDoorCorners_processor", boost::bind(&FindDoorCorners::findDoorCorners_processor, this));
 	addDependency("findDoorCorners_processor", &in_img);
@@ -142,7 +143,7 @@ void FindDoorCorners::findDoorCorners_processor() {
 
 	for(int i=0; i<corners.size(); ++i) {
 		cv::circle(img, corners[i], 5, cv::Scalar(0,255,0),-1);
-		int ms = 50;
+		int ms = window_size;
 		int x_corner = std::min(std::max(corners[i].x-ms/2,0),img.cols-1);
 		int y_corner = std::min(std::max(corners[i].y-ms/2,0),img.rows-1);
 		int x_side, y_side;
@@ -156,9 +157,17 @@ void FindDoorCorners::findDoorCorners_processor() {
 
 	std::cout<<"\n*** "<<corners.size()<<" ***\n";
 
+	Types::DrawableContainer c;
+	for(int i=0; i<corners.size(); ++i) {
+		c.add(new Types::Line(cv::Point(corners[i].x-window_size/2,corners[i].y-window_size/2),cv::Point(corners[i].x+window_size/2,corners[i].y+window_size/2),cv::Scalar(0,255,0)));
+		c.add(new Types::Line(cv::Point(corners[i].x-window_size/2,corners[i].y+window_size/2),cv::Point(corners[i].x+window_size/2,corners[i].y-window_size/2),cv::Scalar(0,255,0)));
+	}
+
 	out_img.write(img);
 
-	out_points.write(corners);
+
+	out_cornersDrawable.write(c);
+	out_corners.write(corners);
 	out_linesPairs.write(lines_pairs);
 }
 

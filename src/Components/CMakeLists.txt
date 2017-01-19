@@ -8,3 +8,5 @@ ADD_COMPONENT(ImproveLines)
 ADD_COMPONENT(VanishingPoints)
 
 ADD_COMPONENT(FindDoorCorners)
+
+ADD_COMPONENT(LinesCornersFitting)
