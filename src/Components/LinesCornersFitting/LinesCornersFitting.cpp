@@ -76,29 +76,32 @@ float mi(float m, float start, float first_max, float last_max, float end) {
 
 /* kat linii - funkcje przynaleznosci */
 float mi_angle_H(float angle) {
-	float a = mi(angle, 0.0, 0.0, 0.083*M_PI, 0.17*M_PI);
-	float b = mi(angle,0.83*M_PI,0.92*M_PI,M_PI,M_PI);
+	float a = mi(angle, 0.0, 0.0, 0.15*M_PI, 0.25*M_PI);
+	float b = mi(angle,0.75*M_PI,0.85*M_PI,M_PI,M_PI);
 	return std::max(a,b);
 }
 float mi_angle_UP(float angle) {
-	float a = mi(angle,0.083*M_PI,0.17*M_PI,0.33*M_PI,0.42*M_PI);
-	float b = mi(angle,0.58*M_PI,0.67*M_PI,0.83*M_PI,0.92*M_PI);
+	float a = mi(angle,0.15*M_PI,0.25*M_PI,0.25*M_PI,0.35*M_PI);
+	float b = mi(angle,0.65*M_PI,0.75*M_PI,0.75*M_PI,0.85*M_PI);
 	return std::max(a,b);
 }
 float mi_angle_V(float angle) {
-	return mi(angle,0.33*M_PI,0.42*M_PI,0.58*M_PI,0.67*M_PI);
+	return mi(angle,0.25*M_PI,0.35*M_PI,0.65*M_PI,0.75*M_PI);
 }
 /* ********************************/
 
 /* rozmiar linii - funkcje przynaleznosci */
+float mi_size_VS(float size, float max) {
+	return mi(size,0.0,0.0,0.10*max,0.2*max);
+}
 float mi_size_S(float size, float max) {
-	return mi(size,0.0,0.0,0.25*max,0.38*max);
+	return mi(size,0.1*max,0.2*max,0.3*max,0.45*max);
 }
 float mi_size_M(float size, float max) {
-	return mi(size,0.25*max,0.38*max,0.63*max,0.75*max);
+	return mi(size,0.30*max,0.45*max,0.70*max,0.80*max);
 }
 float mi_size_B(float size, float max) {
-	return mi(size,0.63*max,0.75*max,max,max);
+	return mi(size,0.70*max,0.80*max,max,max);
 }
 /* ********************************/
 
@@ -153,10 +156,11 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 		angles[1] = mi_angle_UP(a);
 		angles[2] = mi_angle_V(a);
 
-		std::vector<float> sizes(3);
-		sizes[0] = mi_size_S(s, 829.0);
-		sizes[1] = mi_size_M(s, 829.0);
-		sizes[2] = mi_size_B(s, 829.0);
+		std::vector<float> sizes(4);
+		sizes[0] = mi_size_VS(s, 829.0);
+		sizes[1] = mi_size_S(s, 829.0);
+		sizes[2] = mi_size_M(s, 829.0);
+		sizes[3] = mi_size_B(s, 829.0);
 
 		//vertical
 
@@ -168,16 +172,19 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 			if(sizes[0]>0.0) Nver = std::max(Nver,std::min(angles[0],sizes[0]));
 			if(sizes[1]>0.0) Nver = std::max(Nver,std::min(angles[0],sizes[1]));
 			if(sizes[2]>0.0) Nver = std::max(Nver,std::min(angles[0],sizes[2]));
+			if(sizes[3]>0.0) Nver = std::max(Nver,std::min(angles[0],sizes[2]));
 		}
 		if(angles[1]>0.0) {
 			if(sizes[0]>0.0) Nver = std::max(Nver,std::min(angles[1],sizes[0]));
-			if(sizes[1]>0.0) Lver = std::max(Lver,std::min(angles[1],sizes[1]));
+			if(sizes[1]>0.0) Nver = std::max(Nver,std::min(angles[1],sizes[1]));
 			if(sizes[2]>0.0) Lver = std::max(Lver,std::min(angles[1],sizes[2]));
+			if(sizes[3]>0.0) Lver = std::max(Lver,std::min(angles[0],sizes[2]));
 		} 
 		if(angles[2]>0.0) {
-			if(sizes[0]>0.0) Lver = std::max(Lver,std::min(angles[2],sizes[0]));
-			if(sizes[1]>0.0) Hver = std::max(Hver,std::min(angles[2],sizes[1]));
+			if(sizes[0]>0.0) Nver = std::max(Nver,std::min(angles[2],sizes[0]));
+			if(sizes[1]>0.0) Lver = std::max(Lver,std::min(angles[2],sizes[1]));
 			if(sizes[2]>0.0) Hver = std::max(Hver,std::min(angles[2],sizes[2]));
+			if(sizes[3]>0.0) Hver = std::max(Hver,std::min(angles[0],sizes[2]));
 		}
 
 		float Xpos = fabs(lines[i][0]+lines[i][2])/2.0;
@@ -220,19 +227,22 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 		float Hhor = 0.0;
 
 		if(angles[0]>0.0) {
-			if(sizes[0]>0.0) Hhor = std::max(Hhor,std::min(angles[0],sizes[0]));
+			if(sizes[0]>0.0) Lhor = std::max(Lhor,std::min(angles[0],sizes[0]));
 			if(sizes[1]>0.0) Hhor = std::max(Hhor,std::min(angles[0],sizes[1]));
-			if(sizes[2]>0.0) Lhor = std::max(Lhor,std::min(angles[0],sizes[2]));
+			if(sizes[2]>0.0) Hhor = std::max(Hhor,std::min(angles[0],sizes[2]));
+			if(sizes[3]>0.0) Hhor = std::max(Hhor,std::min(angles[0],sizes[2]));
 		}
 		if(angles[1]>0.0) {
-			if(sizes[0]>0.0) Hhor = std::max(Hhor,std::min(angles[1],sizes[0]));
-			if(sizes[1]>0.0) Hhor = std::max(Hhor,std::min(angles[1],sizes[1]));
+			if(sizes[0]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[0]));
+			if(sizes[1]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[1]));
 			if(sizes[2]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[2]));
+			if(sizes[3]>0.0) Lhor = std::max(Lhor,std::min(angles[0],sizes[2]));
 		} 
 		if(angles[2]>0.0) {
 			if(sizes[0]>0.0) Nhor = std::max(Nhor,std::min(angles[2],sizes[0]));
 			if(sizes[1]>0.0) Nhor = std::max(Nhor,std::min(angles[2],sizes[1]));
 			if(sizes[2]>0.0) Nhor = std::max(Nhor,std::min(angles[2],sizes[2]));
+			if(sizes[3]>0.0) Nhor = std::max(Nhor,std::min(angles[0],sizes[2]));
 		}
 
 		float Ypos = fabs(lines[i][1]+lines[i][3])/2.0;
@@ -306,7 +316,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 
 	check_lines(vertical,horizontal,lines);
 
-	/*for(int side=0; side<vertical.size(); ++side) {
+	for(int side=0; side<vertical.size(); ++side) {
 		for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
 			for(int l=0; l<vertical[side][prob1].size(); ++l) {
 				int idx = vertical[side][prob1][l];
@@ -315,20 +325,20 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 				cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
 				cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
 				if(side==0) {
-					if(prob1==0) cv::putText(img,"VprobLeft",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+					if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 					else if(prob1==1) cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 				}
 				else if(side==1) {
-					if(prob1==0) cv::putText(img,"VprobMid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+					if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 					else if(prob1==1) cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 				}
 				else if(side==2) {
-					if(prob1==0) cv::putText(img,"VprobRight",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+					if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 					else if(prob1==1) cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 				}
 			}
 		}
-	}*/
+	}
 
 	for(int hei=0; hei<horizontal.size(); ++hei) {
 		for(int prob1=0; prob1<horizontal[hei].size(); ++prob1) {
