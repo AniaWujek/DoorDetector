@@ -71,7 +71,7 @@
 
 				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
 					<param name="count">2</param>
-					<param name="title">lines,fuzzy</param>
+					<param name="title">corners,fuzzy</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -114,7 +114,7 @@
 			<sink>Corners.in_lines</sink>
 			<sink>FuzzyFitting.in_lines</sink>
 		</Source>
-		<Source name="ImproveLines2.out_linesDrawable">
+		<Source name="Corners.out_cornersDrawable">
 			<sink>Window.in_draw0</sink>
 		</Source>
 		<Source name="Corners.out_corners">

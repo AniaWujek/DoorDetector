@@ -106,32 +106,38 @@ void FindDoorCorners::findDoorCorners_processor() {
 				if(intersection.x<0 || intersection.y<0 || intersection.x>=img.cols || intersection.y>=img.rows); //punkt przeciecia poza obrazkiem
 				else {
 						float t;
-						if(getLength(lines[i])<getLength(lines[j])) t = getLength(lines[i]);
-						else t = getLength(lines[j]);
+						float length1 = getLength(lines[i]);
+						float length2 = getLength(lines[j]);
+						if(length1<length2) t = length1;
+						else t = length2;
 
 						t /= 2.0;
+						float l_inter1 = getLength(intersection,cv::Point(lines[i][0],lines[i][1]));
+						float l_inter2 = getLength(intersection,cv::Point(lines[i][2],lines[i][3]));
+						float l_inter3 = getLength(intersection,cv::Point(lines[j][0],lines[j][1]));
+						float l_inter4 = getLength(intersection,cv::Point(lines[j][2],lines[j][3]));
+						if((length1*0.9 <= l_inter1 || length1*0.9 <= l_inter2) && (length2*0.9 <= l_inter3 || length2*0.9 <= l_inter4)) {
+							if(l_inter1<t || l_inter2<t	|| l_inter3<t || l_inter4<t) {
+								std::vector<cv::Point2f> feature_point;
+								mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
+								int ms = window_size;
+								int x_corner = std::min(std::max(intersection.x-ms/2,0),img.cols-1);
+								int y_corner = std::min(std::max(intersection.y-ms/2,0),img.rows-1);
+								int x_side, y_side;
+								if(x_corner+ms < img.cols) x_side = ms;
+								else x_side = ms - (img.cols-x_corner);
+								if(y_corner+ms < img.rows) y_side = ms;
+								else y_side = ms - (img.rows-y_corner);
 
-						if(getLength(intersection,cv::Point(lines[i][0],lines[i][1]))<t || getLength(intersection,cv::Point(lines[i][2],lines[i][3]))<t
-							|| getLength(intersection,cv::Point(lines[j][0],lines[j][1]))<t || getLength(intersection,cv::Point(lines[j][2],lines[j][3]))<t) {
-							std::vector<cv::Point2f> feature_point;
-							mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
-							int ms = window_size;
-							int x_corner = std::min(std::max(intersection.x-ms/2,0),img.cols-1);
-							int y_corner = std::min(std::max(intersection.y-ms/2,0),img.rows-1);
-							int x_side, y_side;
-							if(x_corner+ms < img.cols) x_side = ms;
-							else x_side = ms - (img.cols-x_corner);
-							if(y_corner+ms < img.rows) y_side = ms;
-							else y_side = ms - (img.rows-y_corner);
+								mask(cv::Rect(x_corner, y_corner, x_side, y_side)) = 1;
+								cv::goodFeaturesToTrack(img,feature_point,1,0.1,100,mask,3,1,k_param);
 
-							mask(cv::Rect(x_corner, y_corner, x_side, y_side)) = 1;
-							cv::goodFeaturesToTrack(img,feature_point,1,0.1,100,mask,3,1,k_param);
+								
 
-							
-
-							if(feature_point.size() > 0) {
-								corners.push_back(feature_point[0]);
-								lines_pairs.push_back(std::make_pair(i,j));
+								if(feature_point.size() > 0) {
+									corners.push_back(feature_point[0]);
+									lines_pairs.push_back(std::make_pair(i,j));
+								}
 							}
 						}
 

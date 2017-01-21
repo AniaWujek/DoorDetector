@@ -17,8 +17,10 @@ namespace LinesCornersFitting {
 
 LinesCornersFitting::LinesCornersFitting(const std::string & name) :
 		Base::Component(name) , 
-		prop("prop", 0.1) {
+		prop("prop", 0),
+		quality("quality",3) {
 	registerProperty(prop);
+	registerProperty(quality);
 
 }
 
@@ -107,25 +109,25 @@ float mi_size_B(float size, float max) {
 
 /* polozenie linii Y - funkcje przynaleznosci */
 float mi_Ylocation_L(float loc, float max) {
-	return mi(loc, 0.0, 0.0, 0.25*max, 0.38*max);
+	return mi(loc, 0.0, 0.0, 0.25*max, 0.4*max);
 }
 float mi_Ylocation_M(float loc, float max) {
-	return mi(loc,0.25*max,0.38*max,0.63*max,0.75*max);
+	return mi(loc,0.25*max,0.4*max,0.6*max,0.75*max);
 }
 float mi_Ylocation_H(float loc, float max) {
-	return mi(loc,0.63*max,0.75*max,max,max);
+	return mi(loc,0.6*max,0.75*max,max,max);
 }
 /* ********************************/
 
 /* polozenie linii X - funkcje przynaleznosci */
 float mi_Xlocation_L(float loc, float max) {
-	return mi(loc, 0.0, 0.0, 0.25*max, 0.38*max);
+	return mi(loc, 0.0, 0.0, 0.25*max, 0.5*max);
 }
 float mi_Xlocation_M(float loc, float max) {
-	return mi(loc,0.25*max,0.38*max,0.63*max,0.75*max);
+	return mi(loc,0.25*max,0.5*max,0.5*max,0.75*max);
 }
 float mi_Xlocation_R(float loc, float max) {
-	return mi(loc,0.63*max,0.75*max,max,max);
+	return mi(loc,0.5*max,0.75*max,max,max);
 }
 /* ********************************/
 
@@ -236,7 +238,7 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 			if(sizes[0]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[0]));
 			if(sizes[1]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[1]));
 			if(sizes[2]>0.0) Lhor = std::max(Lhor,std::min(angles[1],sizes[2]));
-			if(sizes[3]>0.0) Lhor = std::max(Lhor,std::min(angles[0],sizes[2]));
+			if(sizes[3]>0.0) Nhor = std::max(Nhor,std::min(angles[0],sizes[2]));
 		} 
 		if(angles[2]>0.0) {
 			if(sizes[0]>0.0) Nhor = std::max(Nhor,std::min(angles[2],sizes[0]));
@@ -279,6 +281,28 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 	}
 }
 
+bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point &p) {
+	
+	float A1 = line1[1]-line1[3];
+	float B1 = line1[2]-line1[0];
+	float C1 = -(line1[0]*line1[3] - line1[2]*line1[1]);
+	float A2 = line2[1]-line2[3];
+	float B2 = line2[2]-line2[0];
+	float C2 = -(line2[0]*line2[3] - line2[2]*line2[1]);
+	float D = A1*B2 - B1*A2;
+	float Dx = C1*B2 - B1*C2;
+	float Dy = A1*C2 - C1*A2;
+
+	if(D>0.0 || D<0.0) {
+		p.x = Dx/D;
+		p.y = Dy/D;
+	}
+	else return false;
+
+	return true;
+
+}
+
 void LinesCornersFitting::LinesCornersFitting_processor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();
@@ -316,7 +340,87 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 
 	check_lines(vertical,horizontal,lines);
 
-	for(int side=0; side<vertical.size(); ++side) {
+	bool corners_check[lines.size()][lines.size()];
+	for(int i=0; i<lines.size(); ++i) {
+		for(int j=0; j<lines.size(); ++j) {
+			corners_check[i][j] = false;
+		}
+	}
+	for(int i=0; i<lines_pairs.size(); ++i) {
+		corners_check[lines_pairs[i].first][lines_pairs[i].second] = true;
+		corners_check[lines_pairs[i].second][lines_pairs[i].first] = true;
+	}
+	std::vector<std::vector<cv::Vec4i> > good_doors;
+	std::vector<std::vector<cv::Point> > good_corners;
+
+	for(int ht=0; ht<horizontal[0][1].size(); ++ht) {
+		int ht_line = horizontal[0][1][ht];
+		for(int hb=0; hb<horizontal[2][1].size(); ++hb) {
+			int hb_line = horizontal[2][1][hb];
+			for(int vl=0; vl<vertical[0][1].size(); ++vl) {
+				int vl_line = vertical[0][1][vl];
+				for(int vr=0; vr<vertical[2][1].size(); ++vr) {
+					int vr_line = vertical[2][1][vr];
+					if((lines[ht_line][0]+lines[ht_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
+						(lines[ht_line][0]+lines[ht_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2]) && 
+						(lines[hb_line][0]+lines[hb_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
+						(lines[hb_line][0]+lines[hb_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2])) {
+						int q=0;
+						if(corners_check[ht_line][vr_line]) q++;
+						if(corners_check[vr_line][hb_line]) q++;
+						if(corners_check[hb_line][vl_line]) q++;
+						if(corners_check[vl_line][ht_line]) q++;
+						if(q>=quality) {
+							std::vector<cv::Vec4i> door;
+							door.push_back(lines[ht_line]);
+							door.push_back(lines[vr_line]);
+							door.push_back(lines[hb_line]);
+							door.push_back(lines[vl_line]);
+							good_doors.push_back(door);
+							std::vector<cv::Point> c;
+							cv::Point p;
+							getIntersectionPoint(lines[ht_line],lines[vr_line],p);
+							c.push_back(p);
+							getIntersectionPoint(lines[vr_line],lines[hb_line],p);
+							c.push_back(p);
+							getIntersectionPoint(lines[hb_line],lines[vl_line],p);
+							c.push_back(p);
+							getIntersectionPoint(lines[vl_line],lines[ht_line],p);
+							c.push_back(p);
+							good_corners.push_back(c);
+ 						}
+					}
+				}
+			}
+		}
+	}
+
+	std::cout<<"\n *** doors: "<<good_doors.size()<<" ***\n";
+
+
+
+	
+
+	if(good_corners.size()>0) {
+		int idx = prop;
+		if(idx>=good_corners.size()) idx = good_corners.size()-1;
+		cv::line(img,good_corners[idx][0],good_corners[idx][1],cv::Scalar(0,0,255),3);
+		cv::line(img,good_corners[idx][1],good_corners[idx][2],cv::Scalar(0,0,255),3);
+		cv::line(img,good_corners[idx][2],good_corners[idx][3],cv::Scalar(0,0,255),3);
+		cv::line(img,good_corners[idx][3],good_corners[idx][0],cv::Scalar(0,0,255),3);
+	}
+	if(good_doors.size()>0) {
+		int idx = prop;
+		if(idx>=good_doors.size()) idx = good_doors.size()-1;
+		for(int j=0; j<good_doors[idx].size(); ++j) {
+			cv::Point p1 = cv::Point(good_doors[idx][j][0],good_doors[idx][j][1]);
+			cv::Point p2 = cv::Point(good_doors[idx][j][2],good_doors[idx][j][3]);
+			cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
+		}
+	}
+
+
+	/*for(int side=0; side<vertical.size(); ++side) {
 		for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
 			for(int l=0; l<vertical[side][prob1].size(); ++l) {
 				int idx = vertical[side][prob1][l];
@@ -362,7 +466,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 				}
 			}
 		}
-	}
+	}*/
 
 	out_img.write(img);
 

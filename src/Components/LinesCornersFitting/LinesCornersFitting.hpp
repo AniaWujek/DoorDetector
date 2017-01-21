@@ -80,7 +80,8 @@ protected:
 	// Handlers
 
 	// Properties
-	Base::Property<float> prop;
+	Base::Property<int> prop;
+	Base::Property<int> quality;
 
 	
 	// Handlers
