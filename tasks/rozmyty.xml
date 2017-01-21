@@ -6,7 +6,7 @@
 	<!-- task definition -->
 	<Subtasks>
 		<Subtask name="Main">
-			<Executor name="Processing"  period="5">
+			<Executor name="Processing"  period="1">
 				<Component name="Sequence" type="CvBasic:Sequence" priority="1" bump="-1">
 					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/male/</param>
 					<param name="sequence.pattern">.*\.JPG</param>
@@ -63,15 +63,16 @@
 
 				<Component name="Corners" type="DoorDetector:FindDoorCorners" priority="10" bump="0">
 					<param name="k_param">0.05</param>
-					<param name="window_size">15</param>
+					<param name="window_size">10</param>
+					<param name="fast_param">6</param>
 				</Component>
 
 				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting" priority="11" bump="0">
 				</Component>
 
 				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
-					<param name="count">2</param>
-					<param name="title">corners,fuzzy</param>
+					<param name="count">3</param>
+					<param name="title">corners,fuzzy,lines</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -84,6 +85,7 @@
 		<Source name="Sequence.out_img">
 			<sink>GaussianBlur.in_img</sink>
 			<sink>Window.in_img0</sink>	
+			<sink>Window.in_img2</sink>	
 			<sink>FuzzyFitting.in_img</sink>		
 		</Source>
 		<Source name="GaussianBlur.out_img">
@@ -116,6 +118,9 @@
 		</Source>
 		<Source name="Corners.out_cornersDrawable">
 			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="ImproveLines2.out_linesDrawable">
+			<sink>Window.in_draw2</sink>
 		</Source>
 		<Source name="Corners.out_corners">
 			<sink>FuzzyFitting.in_corners</sink>

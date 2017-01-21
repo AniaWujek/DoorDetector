@@ -84,6 +84,7 @@ protected:
 	// Properties
 	Base::Property<float> k_param;
 	Base::Property<int> window_size;
+	Base::Property<int> fast_param;
 
 	
 	// Handlers

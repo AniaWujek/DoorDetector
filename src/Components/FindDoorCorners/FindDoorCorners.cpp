@@ -18,10 +18,12 @@ namespace FindDoorCorners {
 FindDoorCorners::FindDoorCorners(const std::string & name) :
 		Base::Component(name),
 		k_param("k_param",0.04),
-		window_size("window_size", 10)  {
+		window_size("window_size", 10),
+		fast_param("fast_param",10)  {
 
 			registerProperty(k_param);
 			registerProperty(window_size);
+			registerProperty(fast_param);
 
 }
 
@@ -130,14 +132,21 @@ void FindDoorCorners::findDoorCorners_processor() {
 								else y_side = ms - (img.rows-y_corner);
 
 								mask(cv::Rect(x_corner, y_corner, x_side, y_side)) = 1;
-								cv::goodFeaturesToTrack(img,feature_point,1,0.1,100,mask,3,1,k_param);
-
-								
-
-								if(feature_point.size() > 0) {
-									corners.push_back(feature_point[0]);
+								//cv::goodFeaturesToTrack(img,feature_point,1,0.99,100,mask,3,1,k_param);
+								cv::Mat roi = img(cv::Rect(x_corner, y_corner, x_side, y_side));
+								std::vector<cv::KeyPoint> keypoints;
+								cv::FAST(roi,keypoints,fast_param,1);
+								//std::cout<<"\n ** "<<keypoints.size()<<" ** \n";
+								if(keypoints.size()>0) {
+									corners.push_back(intersection);
 									lines_pairs.push_back(std::make_pair(i,j));
 								}
+								
+
+								/*if(feature_point.size() > 0) {
+									corners.push_back(feature_point[0]);
+									lines_pairs.push_back(std::make_pair(i,j));
+								}*/
 							}
 						}
 
