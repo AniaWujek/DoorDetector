@@ -118,7 +118,7 @@ void FindDoorCorners::findDoorCorners_processor() {
 						float l_inter2 = getLength(intersection,cv::Point(lines[i][2],lines[i][3]));
 						float l_inter3 = getLength(intersection,cv::Point(lines[j][0],lines[j][1]));
 						float l_inter4 = getLength(intersection,cv::Point(lines[j][2],lines[j][3]));
-						if((length1*0.9 <= l_inter1 || length1*0.9 <= l_inter2) && (length2*0.9 <= l_inter3 || length2*0.9 <= l_inter4)) {
+						/*if((length1*0.75 <= l_inter1 || length1*0.75 <= l_inter2) && (length2*0.75 <= l_inter3 || length2*0.75 <= l_inter4))*/ {
 							if(l_inter1<t || l_inter2<t	|| l_inter3<t || l_inter4<t) {
 								std::vector<cv::Point2f> feature_point;
 								mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
