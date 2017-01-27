@@ -10,3 +10,5 @@ ADD_COMPONENT(VanishingPoints)
 ADD_COMPONENT(FindDoorCorners)
 
 ADD_COMPONENT(LinesCornersFitting)
+
+ADD_COMPONENT(DoorElementsROI)

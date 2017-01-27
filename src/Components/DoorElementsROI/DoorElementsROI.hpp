@@ -4,8 +4,8 @@
  * \author Anna
  */
 
-#ifndef LINESCORNERSFITTING_HPP_
-#define LINESCORNERSFITTING_HPP_
+#ifndef DOORELEMENTSROI_HPP_
+#define DOORELEMENTSROI_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
@@ -17,25 +17,25 @@
 
 
 namespace Processors {
-namespace LinesCornersFitting {
+namespace DoorElementsROI {
 
 /*!
- * \class LinesCornersFitting
- * \brief LinesCornersFitting processor class.
+ * \class DoorElementsROI
+ * \brief DoorElementsROI processor class.
  *
  * 
  */
-class LinesCornersFitting: public Base::Component {
+class DoorElementsROI: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	LinesCornersFitting(const std::string & name = "LinesCornersFitting");
+	DoorElementsROI(const std::string & name = "DoorElementsROI");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~LinesCornersFitting();
+	virtual ~DoorElementsROI();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -68,33 +68,32 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<std::vector<cv::Vec4i>> in_lines;
-	Base::DataStreamIn<std::vector<cv::Point>> in_corners;
-	Base::DataStreamIn<std::vector<std::pair<int,int> > > in_linesPairs;
+	Base::DataStreamIn<std::vector<cv::Point>> in_door;
 	Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Point> > out_door;
+	Base::DataStreamOut<std::vector<std::vector<cv::Point> > > out_elementsROI;
 	Base::DataStreamOut<cv::Mat> out_img;
 
 	// Handlers
 
 	// Properties
-	Base::Property<int> prop;
-	Base::Property<int> quality;
+	Base::Property<float> ratio;
+	Base::Property<int> contour_n;
+	Base::Property<int> epsilon;
 
 	
 	// Handlers
-	void LinesCornersFitting_processor();
+	void DoorElementsROI_processor();
 
 };
 
-} //: namespace LinesCornersFitting
+} //: namespace DoorElementsROI
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("LinesCornersFitting", Processors::LinesCornersFitting::LinesCornersFitting)
+REGISTER_COMPONENT("DoorElementsROI", Processors::DoorElementsROI::DoorElementsROI)
 
-#endif /* LINESCORNERSFITTING_HPP_ */
+#endif /* DOORELEMENTSROI_HPP_ */

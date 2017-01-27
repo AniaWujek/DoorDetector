@@ -17,8 +17,8 @@
 				<Component name="GaussianBlur" type="CvBasic:CvGaussianBlur" priority="2" bump="0">
 				    <param name="sigmax">0.0</param>
 				    <param name="sigmay">0.0</param>
-				    <param name="kernel.height">5</param>
-				    <param name="kernel.width">5</param>
+				    <param name="kernel.height">9</param>
+				    <param name="kernel.width">9</param>
 				</Component>
 
 				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="3" bump="0">
@@ -70,11 +70,21 @@
 				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting" priority="11" bump="0">
 				</Component>
 
-				<Component name="Window" type="CvBasic:CvWindow" priority="12" bump="0">
-					<param name="count">3</param>
-					<param name="title">corners,fuzzy,lines</param>
+				<Component name="Elements" type="DoorDetector:DoorElementsROI" priority="12" bump="0">
+					<param name="ratio">0.25</param>
+				</Component>
+				
+				<Component name="Window" type="CvBasic:CvWindow" priority="15" bump="0">
+					<param name="count">4</param>
+					<param name="title">corners,doors,linesimp,elements</param>
 					<param name="window_resize">1</param>
 				</Component>
+
+				
+
+
+
+				
 			</Executor>
 		</Subtask>	
 	
@@ -84,7 +94,7 @@
 	<DataStreams>
 		<Source name="Sequence.out_img">
 			<sink>GaussianBlur.in_img</sink>
-			<sink>Window.in_img0</sink>	
+			<sink>Window.in_img0</sink>		
 			<sink>Window.in_img2</sink>	
 			<sink>FuzzyFitting.in_img</sink>		
 		</Source>
@@ -98,7 +108,8 @@
 		</Source>
 		<Source name="Histogram.out_img">
 			<sink>Canny.in_img</sink>
-			<sink>Corners.in_img</sink>			
+			<sink>Corners.in_img</sink>	
+			<sink>Elements.in_img</sink>		
 		</Source>
 		<Source name="Canny.out_img">			
 			<sink>Morphology.in_img</sink>
@@ -130,6 +141,12 @@
 		</Source>
 		<Source name="FuzzyFitting.out_img">
 			<sink>Window.in_img1</sink>
+		</Source>
+		<Source name="FuzzyFitting.out_door">
+			<sink>Elements.in_door</sink>
+		</Source>
+		<Source name="Elements.out_img">
+			<sink>Window.in_img3</sink>
 		</Source>
 	</DataStreams>
 </Task>
