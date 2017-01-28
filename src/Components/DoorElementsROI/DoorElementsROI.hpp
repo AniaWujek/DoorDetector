@@ -81,6 +81,7 @@ protected:
 	Base::Property<float> ratio;
 	Base::Property<int> contour_n;
 	Base::Property<int> epsilon;
+	Base::Property<int> horizontal_thresh;
 
 	
 	// Handlers
