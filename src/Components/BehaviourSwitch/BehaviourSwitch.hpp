@@ -4,8 +4,8 @@
  * \author Anna
  */
 
-#ifndef LINESCORNERSFITTING_HPP_
-#define LINESCORNERSFITTING_HPP_
+#ifndef BEHAVIOURSWITCH_HPP_
+#define BEHAVIOURSWITCH_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
@@ -17,25 +17,25 @@
 
 
 namespace Processors {
-namespace LinesCornersFitting {
+namespace BehaviourSwitch {
 
 /*!
- * \class LinesCornersFitting
- * \brief LinesCornersFitting processor class.
+ * \class BehaviourSwitch
+ * \brief BehaviourSwitch processor class.
  *
  * 
  */
-class LinesCornersFitting: public Base::Component {
+class BehaviourSwitch: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	LinesCornersFitting(const std::string & name = "LinesCornersFitting");
+	BehaviourSwitch(const std::string & name = "BehaviourSwitch");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~LinesCornersFitting();
+	virtual ~BehaviourSwitch();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -68,33 +68,26 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<std::vector<cv::Vec4i>> in_lines;
-	Base::DataStreamIn<std::vector<cv::Point2f>> in_corners;
-	Base::DataStreamIn<std::vector<std::pair<int,int> > > in_linesPairs;
-	Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Point2f> > out_door;
-	Base::DataStreamOut<cv::Mat> out_img;
+	Base::DataStreamOut<int> out_behaviour;
 
 	// Handlers
 
 	// Properties
-	Base::Property<int> prop;
-	Base::Property<int> quality;
 
 	
 	// Handlers
-	void LinesCornersFitting_processor();
+	void BehaviourSwitch_processor();
 
 };
 
-} //: namespace LinesCornersFitting
+} //: namespace BehaviourSwitch
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("LinesCornersFitting", Processors::LinesCornersFitting::LinesCornersFitting)
+REGISTER_COMPONENT("BehaviourSwitch", Processors::BehaviourSwitch::BehaviourSwitch)
 
-#endif /* LINESCORNERSFITTING_HPP_ */
+#endif /* BEHAVIOURSWITCH_HPP_ */

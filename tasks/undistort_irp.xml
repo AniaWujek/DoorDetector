@@ -17,32 +17,17 @@
 				<Component name="CameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="2">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
-					<param name="camera_matrix">1 0 0 ; 0 1 0 ; 0 0 1</param>
-					<param name="dist_coeffs">0 0 0 0 0 0 0 0</param>
+					<param name="camera_matrix">1338.581713053244 0 704.1015317291597; 0 1318.731694280917 517.1574122353933; 0 0 1</param>
+					<param name="dist_coeffs">-0.393842 0.157774 -0.000447 0.001075 0.000000</param>
+					<!--<param name="dist_coeffs">0 0 0 0 0</param>-->
 				</Component>
 
 				<Component name="Undistort" type="CvBasic:CvUndistort" priority="3" bump="0">
 				</Component>
 
-				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="4" bump="0">
-					<param name="type">BGR2GRAY</param>
-				</Component>
-
-				<Component name="Chessboard" type="CvBasic:CvFindChessboardCorners" priority="5" bump="0">
-					<param name="chessboard.board_width">6</param>
-					<param name="chessboard.board_height">5</param>
-					<param name="chessboard.square_width">0.04</param>
-					<param name="chessboard.square_height">0.04</param>
-					<param name="flags.fast_check">false</param>
-				</Component>
-
-				<Component name="Calib" type="CvBasic:Calib" priority="6" bump="1">
-				</Component>
-
-
 				<Component name="Window" type="CvBasic:CvWindow" priority="10" bump="0">
-					<param name="count">1</param>
-					<param name="title">Okienko</param>
+					<param name="count">2</param>
+					<param name="title">ori, und</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -54,25 +39,13 @@
 	<DataStreams>
 		<Source name="Source.out_img">
 			<sink>Undistort.in_img</sink>
-			<sink>Calib.in_img</sink>
+			<sink>Window.in_img0</sink>
 		</Source>
 		<Source name="CameraInfo.out_camera_info">
 			<sink>Undistort.in_camera_info</sink>
-			<sink>Calib.in_camera_info</sink>
 		</Source>
 		<Source name="Undistort.out_img">
-			<sink>ColorConv.in_img</sink>
-			<sink>Window.in_img</sink>
-		</Source>
-		<Source name="ColorConv.out_img">
-			<sink>Chessboard.in_img</sink>
-		</Source>
-		<Source name="Chessboard.out_chessboard">
-			<sink>Window.in_draw</sink>
-			<sink>Calib.in_object3d</sink>
-		</Source>
-		<Source name="Calib.out_camera_info">
-			<sink>CameraInfo.in_camera_info</sink>
+			<sink>Window.in_img1</sink>
 		</Source>
 	</DataStreams>
 </Task>

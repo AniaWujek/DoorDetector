@@ -62,7 +62,7 @@ bool FindDoorCorners::onStart() {
 	return true;
 }
 
-bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point &p) {
+bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	
 	float A1 = line1[1]-line1[3];
 	float B1 = line1[2]-line1[0];
@@ -84,11 +84,11 @@ bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point &p) {
 
 }
 
-float getLength(cv::Point p0, cv::Point p1) {
+float getLength(cv::Point2f p0, cv::Point2f p1) {
     return sqrt((p0.x-p1.x)*(p0.x-p1.x) + (p0.y-p1.y)*(p0.y-p1.y));
 }
 float getLength(cv::Vec4i line) {
-	return getLength(cv::Point(line[0],line[1]),cv::Point(line[2],line[3]));
+	return getLength(cv::Point2f(line[0],line[1]),cv::Point2f(line[2],line[3]));
 }
 
 void FindDoorCorners::findDoorCorners_processor() {
@@ -98,9 +98,9 @@ void FindDoorCorners::findDoorCorners_processor() {
 	cv::Mat mask;
 
 	std::vector<std::pair<int,int> > lines_pairs;
-	std::vector<cv::Point> corners;
+	std::vector<cv::Point2f> corners;
 
-	cv::Point intersection;
+	cv::Point2f intersection;
 
 	for(int i=0; i<lines.size()-1; ++i) {
 		for(int j=i+1; j<lines.size(); ++j) {
@@ -123,8 +123,8 @@ void FindDoorCorners::findDoorCorners_processor() {
 								std::vector<cv::Point2f> feature_point;
 								mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
 								int ms = window_size;
-								int x_corner = std::min(std::max(intersection.x-ms/2,0),img.cols-1);
-								int y_corner = std::min(std::max(intersection.y-ms/2,0),img.rows-1);
+								int x_corner = std::min(std::max(int(intersection.x-ms/2.0),0),(img.cols-1));
+								int y_corner = std::min(std::max(int(intersection.y-ms/2.0),0),(img.rows-1));
 								int x_side, y_side;
 								if(x_corner+ms < img.cols) x_side = ms;
 								else x_side = ms - (img.cols-x_corner);
@@ -159,23 +159,23 @@ void FindDoorCorners::findDoorCorners_processor() {
 	for(int i=0; i<corners.size(); ++i) {
 		cv::circle(img, corners[i], 5, cv::Scalar(0,255,0),-1);
 		int ms = window_size;
-		int x_corner = std::min(std::max(corners[i].x-ms/2,0),img.cols-1);
-		int y_corner = std::min(std::max(corners[i].y-ms/2,0),img.rows-1);
+		int x_corner = std::min(std::max(int(corners[i].x-ms/2.0),0),img.cols-1);
+		int y_corner = std::min(std::max(int(corners[i].y-ms/2.0),0),img.rows-1);
 		int x_side, y_side;
 		if(x_corner+ms < img.cols) x_side = ms;
 		else x_side = ms - (img.cols-x_corner);
 		if(y_corner+ms < img.rows) y_side = ms;
 		else y_side = ms - (img.rows-y_corner);
-		cv::rectangle(img,cv::Point(x_corner,y_corner),cv::Point(x_corner+x_side,y_corner+y_side),cv::Scalar(0,255,0),3);
+		cv::rectangle(img,cv::Point2f(x_corner,y_corner),cv::Point2f(x_corner+x_side,y_corner+y_side),cv::Scalar(0,255,0),3);
 		
 	}
 
-	std::cout<<"\n*** "<<corners.size()<<" ***\n";
+	//std::cout<<"\n*** "<<corners.size()<<" ***\n";
 
 	Types::DrawableContainer c;
 	for(int i=0; i<corners.size(); ++i) {
-		c.add(new Types::Line(cv::Point(corners[i].x-window_size/2,corners[i].y-window_size/2),cv::Point(corners[i].x+window_size/2,corners[i].y+window_size/2),cv::Scalar(0,255,0)));
-		c.add(new Types::Line(cv::Point(corners[i].x-window_size/2,corners[i].y+window_size/2),cv::Point(corners[i].x+window_size/2,corners[i].y-window_size/2),cv::Scalar(0,255,0)));
+		c.add(new Types::Line(cv::Point2f(corners[i].x-window_size/2,corners[i].y-window_size/2),cv::Point2f(corners[i].x+window_size/2,corners[i].y+window_size/2),cv::Scalar(0,255,0)));
+		c.add(new Types::Line(cv::Point2f(corners[i].x-window_size/2,corners[i].y+window_size/2),cv::Point2f(corners[i].x+window_size/2,corners[i].y-window_size/2),cv::Scalar(0,255,0)));
 	}
 
 	out_img.write(img);

@@ -12,3 +12,7 @@ ADD_COMPONENT(FindDoorCorners)
 ADD_COMPONENT(LinesCornersFitting)
 
 ADD_COMPONENT(DoorElementsROI)
+
+ADD_COMPONENT(DoorModel)
+
+ADD_COMPONENT(BehaviourSwitch)

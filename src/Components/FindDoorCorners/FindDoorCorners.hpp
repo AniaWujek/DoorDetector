@@ -74,7 +74,7 @@ protected:
 	Base::DataStreamIn<std::vector<cv::Vec4i> > in_lines;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Point> > out_corners;
+	Base::DataStreamOut<std::vector<cv::Point2f> > out_corners;
 	Base::DataStreamOut<std::vector<std::pair<int,int> > > out_linesPairs;
 	Base::DataStreamOut<cv::Mat> out_img;
 	Base::DataStreamOut <Types::DrawableContainer> out_cornersDrawable;

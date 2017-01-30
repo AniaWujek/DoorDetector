@@ -4,38 +4,39 @@
  * \author Anna
  */
 
-#ifndef LINESCORNERSFITTING_HPP_
-#define LINESCORNERSFITTING_HPP_
+#ifndef DOORMODEL_HPP_
+#define DOORMODEL_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
+#include "Types/Objects3D/Object3D.hpp"
 
 #include <opencv2/opencv.hpp>
 
 
 namespace Processors {
-namespace LinesCornersFitting {
+namespace DoorModel {
 
 /*!
- * \class LinesCornersFitting
- * \brief LinesCornersFitting processor class.
+ * \class DoorModel
+ * \brief DoorModel processor class.
  *
  * 
  */
-class LinesCornersFitting: public Base::Component {
+class DoorModel: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	LinesCornersFitting(const std::string & name = "LinesCornersFitting");
+	DoorModel(const std::string & name = "DoorModel");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~LinesCornersFitting();
+	virtual ~DoorModel();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -68,33 +69,33 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<std::vector<cv::Vec4i>> in_lines;
-	Base::DataStreamIn<std::vector<cv::Point2f>> in_corners;
-	Base::DataStreamIn<std::vector<std::pair<int,int> > > in_linesPairs;
-	Base::DataStreamIn<cv::Mat> in_img;
+	Base::DataStreamIn<std::vector<cv::Point2f> > in_points;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<cv::Point2f> > out_door;
-	Base::DataStreamOut<cv::Mat> out_img;
+	Base::DataStreamOut<Types::Objects3D::Object3D> out_doorModel;
 
 	// Handlers
 
 	// Properties
-	Base::Property<int> prop;
-	Base::Property<int> quality;
+	Base::Property<float> width;
+	Base::Property<float> height;
 
 	
 	// Handlers
-	void LinesCornersFitting_processor();
+	void DoorModel_processor();
+
+	boost::shared_ptr<Types::Objects3D::Object3D> door_model;
+	void sizeCallback(float old_value, float new_value);
+	void initModel();
 
 };
 
-} //: namespace LinesCornersFitting
+} //: namespace DoorModel
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("LinesCornersFitting", Processors::LinesCornersFitting::LinesCornersFitting)
+REGISTER_COMPONENT("DoorModel", Processors::DoorModel::DoorModel)
 
-#endif /* LINESCORNERSFITTING_HPP_ */
+#endif /* DOORMODEL_HPP_ */

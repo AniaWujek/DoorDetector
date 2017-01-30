@@ -140,11 +140,11 @@ float getAngle(cv::Vec4i line) {
 	return atan2(y,x);
 }
 
-float getLength(cv::Point p0, cv::Point p1) {
+float getLength(cv::Point2f p0, cv::Point2f p1) {
     return sqrt((p0.x-p1.x)*(p0.x-p1.x) + (p0.y-p1.y)*(p0.y-p1.y));
 }
 float getLength(cv::Vec4i line) {
-	return getLength(cv::Point(line[0],line[1]),cv::Point(line[2],line[3]));
+	return getLength(cv::Point2f(line[0],line[1]),cv::Point2f(line[2],line[3]));
 }
 
 
@@ -283,7 +283,7 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 	}
 }
 
-bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point &p) {
+bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	
 	float A1 = line1[1]-line1[3];
 	float B1 = line1[2]-line1[0];
@@ -310,7 +310,7 @@ bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point &p) {
 void LinesCornersFitting::LinesCornersFitting_processor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();
-	std::vector<cv::Point> corners = in_corners.read();
+	std::vector<cv::Point2f> corners = in_corners.read();
 	std::vector<std::pair<int,int> > lines_pairs = in_linesPairs.read();
 
 	cv::Mat img = in_img.read().clone();
@@ -368,7 +368,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 	}
 	std::vector<std::vector<std::vector<cv::Vec4i > > > good_doors;
 	good_doors.resize(5);
-	std::vector<std::vector<std::vector<cv::Point> > > good_corners(5);
+	std::vector<std::vector<std::vector<cv::Point2f> > > good_corners(5);
 	good_corners.resize(5);
 
 	for(int ht=0; ht<horizontal[0][1].size(); ++ht) {
@@ -388,7 +388,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 						(lines[vr_line][1]+lines[vr_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
 						(lines[vr_line][1]+lines[vr_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3])*/) {
 							int q=0;
-							cv::Point p0, p1, p2, p3;
+							cv::Point2f p0, p1, p2, p3;
 							if(getIntersectionPoint(lines[ht_line],lines[vr_line],p0) &&
 								getIntersectionPoint(lines[vr_line],lines[hb_line],p1) &&
 								getIntersectionPoint(lines[hb_line],lines[vl_line],p2) &&
@@ -412,7 +412,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 												door.push_back(lines[hb_line]);
 												door.push_back(lines[vl_line]);
 												good_doors[q].push_back(door);
-												std::vector<cv::Point> c;
+												std::vector<cv::Point2f> c;
 												c.push_back(p0);
 												c.push_back(p1);
 												c.push_back(p2);
@@ -437,7 +437,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 	if(good_doors[best_idx].size()==0 || best_idx==0) {
 		std::vector<std::vector<std::vector<cv::Vec4i > > > good_doors2;
 		good_doors2.resize(5);
-		std::vector<std::vector<std::vector<cv::Point> > > good_corners2(5);
+		std::vector<std::vector<std::vector<cv::Point2f> > > good_corners2(5);
 		good_corners2.resize(5);
 
 		horizontal[0][1].insert(horizontal[0][1].end(),horizontal[0][0].begin(),horizontal[0][0].end());
@@ -461,7 +461,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 						(lines[vr_line][1]+lines[vr_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
 						(lines[vr_line][1]+lines[vr_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3])*/) {
 							int q=0;
-							cv::Point p0, p1, p2, p3;
+							cv::Point2f p0, p1, p2, p3;
 							if(getIntersectionPoint(lines[ht_line],lines[vr_line],p0) &&
 								getIntersectionPoint(lines[vr_line],lines[hb_line],p1) &&
 								getIntersectionPoint(lines[hb_line],lines[vl_line],p2) &&
@@ -486,7 +486,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 										door.push_back(lines[hb_line]);
 										door.push_back(lines[vl_line]);
 										good_doors2[q].push_back(door);
-										std::vector<cv::Point> c;
+										std::vector<cv::Point2f> c;
 										c.push_back(p0);
 										c.push_back(p1);
 										c.push_back(p2);
@@ -524,7 +524,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		good_corners[best_idx].insert(good_corners[best_idx].end(),good_corners[best_idx-1].begin(),good_corners[best_idx-1].end());
 	}
 
-	std::cout<<"\n *** best doors: "<<good_doors[best_idx].size()<<" ***\n";
+	//std::cout<<"\n *** best doors: "<<good_doors[best_idx].size()<<" ***\n";
 	int best_door=-1;
 	if(good_doors[best_idx].size()>1) {
 		std::vector<float> avgs;
@@ -564,10 +564,10 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		for(int i=0; i<good_doors[best_idx].size(); ++i) {
 			cv::Mat shape = cv::Mat::zeros(img.rows,img.cols,CV_8U);
 			cv::Point mask_points[1][4];
-			mask_points[0][0] = good_corners[best_idx][i][0];
-			mask_points[0][1] = good_corners[best_idx][i][1];
-			mask_points[0][2] = good_corners[best_idx][i][2];
-			mask_points[0][3] = good_corners[best_idx][i][3];
+			mask_points[0][0] = cv::Point(good_corners[best_idx][i][0]);
+			mask_points[0][1] = cv::Point(good_corners[best_idx][i][1]);
+			mask_points[0][2] = cv::Point(good_corners[best_idx][i][2]);
+			mask_points[0][3] = cv::Point(good_corners[best_idx][i][3]);
 			const cv::Point* ppt[1] = {mask_points[0]};
 			int npt[] = {4};
 			cv::fillPoly(shape,ppt,npt,1,cv::Scalar(255,255,255));
@@ -638,7 +638,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		if(door_groups[i].size()>=door_groups[max_group].size()) max_group=i;
 	}
 
-	std::vector<cv::Point> final_door = good_corners[best_idx][door_groups[max_group][0]];
+	std::vector<cv::Point2f> final_door = good_corners[best_idx][door_groups[max_group][0]];
 
 	for(int i=1; i<door_groups[max_group].size(); ++i) {
 		final_door[0].x += good_corners[best_idx][door_groups[max_group][i]][0].x;
@@ -649,9 +649,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		final_door[2].y += good_corners[best_idx][door_groups[max_group][i]][2].y;
 		final_door[3].x += good_corners[best_idx][door_groups[max_group][i]][3].x;
 		final_door[3].y += good_corners[best_idx][door_groups[max_group][i]][3].y;
-		if( good_corners[best_idx][door_groups[max_group][i]][3].y < 0) {
-			std::cout<<"\n***\ntutaj: "<<good_corners[best_idx][door_groups[max_group][i]][3].y<<"\n***\n";
-		}
+		
 	}
 	
 	final_door[0].x /= door_groups[max_group].size();
@@ -669,7 +667,7 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 	cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
 	cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
 
-	std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
+	//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
 
 
 

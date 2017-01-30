@@ -68,11 +68,11 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<std::vector<cv::Point>> in_door;
+	Base::DataStreamIn<std::vector<cv::Point2f>> in_door;
 	Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<std::vector<cv::Point> > > out_elementsROI;
+	Base::DataStreamOut<std::vector<std::vector<cv::Point2f> > > out_elementsROI;
 	Base::DataStreamOut<cv::Mat> out_img;
 
 	// Handlers
