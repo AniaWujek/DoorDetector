@@ -27,3 +27,11 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 #     DESTINATION include/Types
 #     COMPONENT sdk
 # )
+
+FILE(GLOB headers *.hpp)
+
+install(
+    FILES ${headers}
+    DESTINATION include/Types
+    COMPONENT sdk
+)

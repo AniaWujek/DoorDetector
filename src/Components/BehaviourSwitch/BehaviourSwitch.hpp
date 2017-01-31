@@ -15,6 +15,11 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "ros/ros.h"
+
+#include "Order_simple.hpp"
+#include "Types/Line.hpp"
+
 
 namespace Processors {
 namespace BehaviourSwitch {
@@ -71,14 +76,24 @@ protected:
 
 	// Output data streams
 	Base::DataStreamOut<int> out_behaviour;
+	Base::DataStreamOut<std::string> out_imgPath;
+	Base::DataStreamOut<std::string> out_modelsPath;
 
 	// Handlers
 
 	// Properties
+	Base::Property<std::string> ros_topic_name;
+	Base::Property<std::string> ros_namespace;
 
 	
 	// Handlers
 	void BehaviourSwitch_processor();
+
+	ros::Subscriber subscriber;
+	ros::NodeHandle *nodeHandle;
+
+	void callback(const door_detector::Order_simple::ConstPtr &order);
+	bool own_spin;
 
 };
 

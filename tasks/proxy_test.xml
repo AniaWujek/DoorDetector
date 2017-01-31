@@ -1,0 +1,27 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+	</Reference>
+
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Processing">
+			<Executor name="ProcessingThread"  period="1">
+				<Component name="Proxy" type="DoorDetector:BehaviourSwitch" priority="1" bump="0">
+					<param name="ros_topic_name">subsystem_orders</param>
+					<param name="ros_namespace">subsystem</param>
+				</Component>
+			</Executor>
+		</Subtask>
+
+	</Subtasks>
+
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		
+	</DataStreams>
+</Task>
+
+
+
+
