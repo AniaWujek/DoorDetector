@@ -96,6 +96,11 @@
 					<param name="ratio">0.25</param>
 					<param name="epsilon">10</param>
 				</Component>
+
+				<Component name="Proxy" type="ROSProxy:Float32MultiArrayProxy" priority="130" bump="0">
+					<param name="ros.topic_name">door_position</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
 				
 				<Component name="Window" type="CvBasic:CvWindow" priority="150" bump="0">
 					<param name="count">2</param>
@@ -184,6 +189,9 @@
 		</Source>
 		<Source name="DrawSystem.out_csystem">
 			<sink>Window.in_draw0</sink>
+		</Source>
+		<Source name="SolvePnP.out_homogMatrixVec">
+			<sink>Proxy.in_data</sink>
 		</Source>
 	</DataStreams>
 </Task>

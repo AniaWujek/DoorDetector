@@ -95,6 +95,10 @@ protected:
 	void callback(const door_detector::Order_simple::ConstPtr &order);
 	bool own_spin;
 
+	std::string behaviour;
+	std::string imgPath;
+	std::string modelsPath;
+
 };
 
 } //: namespace BehaviourSwitch

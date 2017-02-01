@@ -16,3 +16,6 @@ ADD_COMPONENT(DoorElementsROI)
 ADD_COMPONENT(DoorModel)
 
 ADD_COMPONENT(BehaviourSwitch)
+
+ADD_COMPONENT(Sequence)
+

@@ -22,6 +22,7 @@ FIND_PACKAGE( OpenCV REQUIRED )
 # SET(DCL_LIBRARIES ${DCL_LIBRARIES} ${OpenCV_LIBS})
 
 # Find another DCLs our one depends on
+DISCODE_FIND_DCL(CvCoreTypes)
 DISCODE_FIND_DCL(CvBasic)
 
 # Check, whether all necessary libraries are linked

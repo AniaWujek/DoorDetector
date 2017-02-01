@@ -47,6 +47,11 @@ bool BehaviourSwitch::onInit() {
 	nodeHandle = new ros::NodeHandle;
 	subscriber = nodeHandle->subscribe(ros_topic_name, 1, &BehaviourSwitch::callback, this);
 
+	behaviour = "x";
+	imgPath = "x";
+	modelsPath = "x";
+
+
 	return true;
 }
 
@@ -64,8 +69,25 @@ bool BehaviourSwitch::onStart() {
 }
 
 void BehaviourSwitch::callback(const door_detector::Order_simple::ConstPtr& order) {
-	if(!own_spin) return;	
-	CLOG(LNOTICE) << "Received: " << *order;
+	if(!own_spin) return;
+	std::string b, i, m;
+	b = order->behaviour;
+	i = order->img_path;
+	m = order->models_path;	
+	if(b != behaviour) behaviour = b;
+	if(i != imgPath) imgPath = i;
+	if(m != modelsPath) modelsPath = m;
+
+	int b_code = 0;
+	if(behaviour == "door_localization") b_code = 1;
+	if(behaviour == "elements_localization") b_code = 2;
+
+	out_behaviour.write(b_code);
+	out_imgPath.write(imgPath);
+	out_modelsPath.write(modelsPath);
+
+
+	CLOG(LNOTICE) << "\nReceived: " << *order;
 }
 
 void BehaviourSwitch::BehaviourSwitch_processor() {

@@ -7,9 +7,30 @@
 	<Subtasks>
 		<Subtask name="Processing">
 			<Executor name="ProcessingThread"  period="1">
-				<Component name="Proxy" type="DoorDetector:BehaviourSwitch" priority="1" bump="0">
+				<Component name="Proxy" type="DoorDetector:BehaviourSwitch" priority="10" bump="0">
 					<param name="ros_topic_name">subsystem_orders</param>
 					<param name="ros_namespace">subsystem</param>
+				</Component>
+
+				<Component name="Image" type="DoorDetector:Sequence" priority="20" bump="0">
+					<param name="sequence.pattern">.*\.png</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamek1</param>
+					<param name="mode.loop">0</param>
+					<param name="mode.auto_next_image">0</param>
+				</Component>
+
+				<Component name="ColorConv1" type="CvBasic:CvColorConv" priority="25" bump="0">
+					<param name="type">BGR2HSV</param>
+				</Component>
+
+				<Component name="ColorConv2" type="CvBasic:CvColorConv" priority="27" bump="0">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+
+				<Component name="Window" type="CvBasic:CvWindow" priority="30" bump="0">
+					<param name="count">1</param>
+					<param name="title">img</param>
+					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
 		</Subtask>
@@ -18,7 +39,21 @@
 
 	<!-- pipes connecting datastreams -->
 	<DataStreams>
-		
+		<Source name="Proxy.out_behaviour">
+			<sink>Image.in_switch</sink>
+		</Source>
+		<Source name="Image.out_img0">
+			<sink>ColorConv1.in_img</sink>
+		</Source>
+		<Source name="Image.out_img1">
+			<sink>ColorConv2.in_img</sink>
+		</Source>
+		<Source name="ColorConv1.out_img">
+			<sink>Window.in_img</sink>
+		</Source>
+		<Source name="ColorConv2.out_img">
+			<sink>Window.in_img</sink>
+		</Source>			
 	</DataStreams>
 </Task>
 
