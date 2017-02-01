@@ -19,3 +19,4 @@ ADD_COMPONENT(BehaviourSwitch)
 
 ADD_COMPONENT(Sequence)
 
+ADD_COMPONENT(LinesCornersFitting2)

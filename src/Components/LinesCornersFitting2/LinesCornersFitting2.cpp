@@ -7,28 +7,35 @@
 #include <memory>
 #include <string>
 
-#include "LinesCornersFitting.hpp"
+#include "LinesCornersFitting2.hpp"
 #include "Common/Logger.hpp"
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <iomanip>
 
 namespace Processors {
-namespace LinesCornersFitting {
+namespace LinesCornersFitting2 {
 
-LinesCornersFitting::LinesCornersFitting(const std::string & name) :
+LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 		Base::Component(name) , 
 		prop("prop", 0),
-		quality("quality",3) {
+		quality("quality",3),
+		dev_choice("dev_choice", 0),
+		hsv_channel("hsv_channel", 0) {
 	registerProperty(prop);
 	registerProperty(quality);
+	registerProperty(dev_choice);
+
+	hsv_channel.addConstraint("0");
+	hsv_channel.addConstraint("2");
+	registerProperty(hsv_channel);
 
 }
 
-LinesCornersFitting::~LinesCornersFitting() {
+LinesCornersFitting2::~LinesCornersFitting2() {
 }
 
-void LinesCornersFitting::prepareInterface() {
+void LinesCornersFitting2::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("in_lines", &in_lines);
 	registerStream("in_corners", &in_corners);
@@ -37,42 +44,44 @@ void LinesCornersFitting::prepareInterface() {
 	registerStream("in_img", &in_img);
 	registerStream("out_img", &out_img);
 	// Register handlers
-	registerHandler("LinesCornersFitting_processor", boost::bind(&LinesCornersFitting::LinesCornersFitting_processor, this));
-	addDependency("LinesCornersFitting_processor", &in_lines);
-	addDependency("LinesCornersFitting_processor", &in_linesPairs);
-	addDependency("LinesCornersFitting_processor", &in_corners);
-	addDependency("LinesCornersFitting_processor", &in_img);
+	registerHandler("LinesCornersFitting2_processor", boost::bind(&LinesCornersFitting2::LinesCornersFitting2_processor, this));
+	addDependency("LinesCornersFitting2_processor", &in_lines);
+	addDependency("LinesCornersFitting2_processor", &in_linesPairs);
+	addDependency("LinesCornersFitting2_processor", &in_corners);
+	addDependency("LinesCornersFitting2_processor", &in_img);
 
 }
 
-bool LinesCornersFitting::onInit() {
+bool LinesCornersFitting2::onInit() {
 
 	return true;
 }
 
-bool LinesCornersFitting::onFinish() {
+bool LinesCornersFitting2::onFinish() {
 	return true;
 }
 
-bool LinesCornersFitting::onStop() {
+bool LinesCornersFitting2::onStop() {
 	return true;
 }
 
-bool LinesCornersFitting::onStart() {
+bool LinesCornersFitting2::onStart() {
 	return true;
 }
 
 float mi(float m, float start, float first_max, float last_max, float end) {
-	if(m<=start || m>=end) {
+	if(m<start || m>end) {
 		return 0.0;
 	}
 	if(m<first_max) {
+		if(first_max==start) return 1.0;
 		return (m-start)/(first_max-start);
 	}
 	if(m<last_max) {
 		return 1.0;
 	}
 	if(m<end) {
+		if(end==last_max) return 1.0;
 		return (end-m)/(end-last_max);
 	}
 }
@@ -197,20 +206,9 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 		float Mside = mi_Xlocation_M(Xpos,622.0);
 		float Rside = mi_Xlocation_R(Xpos,622.0);
 
-		if(Nver>=Lver && Nver>=Hver);//na pewno nie
+		if(Nver>Lver && Nver>Hver);//na pewno nie
 		else {
-			if(Lver>Hver) { //byc moze
-				if(Lside>Mside && Lside>Rside) { //po lewej
-					v[0][0].push_back(i);
-				}
-				else if(Mside>Rside) { //po srodku
-					v[1][0].push_back(i);
-				}
-				else { //po prawej
-					v[2][0].push_back(i);
-				}
-			}
-			else { //na pewno
+			if(Lver>Hver) { //na pewno
 				if(Lside>Mside && Lside>Rside) { //po lewej
 					v[0][1].push_back(i);
 				}
@@ -221,6 +219,18 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 					v[2][1].push_back(i);
 				}
 			}
+			else { //byc moze
+				if(Lside>Mside && Lside>Rside) { //po lewej
+					v[0][0].push_back(i);
+				}
+				else if(Mside>Rside) { //po srodku
+					v[1][0].push_back(i);
+				}
+				else { //po prawej
+					v[2][0].push_back(i);
+				}
+			}
+			
 		}
 
 
@@ -255,20 +265,9 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 		float Mhei = mi_Ylocation_M(Ypos,829.0);
 		float Lhei = mi_Ylocation_H(Ypos,829.0);
 
-		if(Nhor>=Lhor && Nhor>=Hhor);//na pewno nie
-		else {
-			if(Lhor>Hhor) { //byc moze
-				if(Lhei>Mhei && Lhei>Hhei) { //na dole
-					h[2][0].push_back(i);
-				}
-				else if(Mhei>Hhei) { //po srodku
-					h[1][0].push_back(i);
-				}
-				else { //na gorze
-					h[0][0].push_back(i);
-				}
-			}
-			else { //na pewno
+		if(Nhor>Lhor && Nhor>Hhor); //na pewno nie
+		else {			
+			if(Hhor>Lhor) { //na pewno
 				if(Lhei>Mhei && Lhei>Hhei) { //na dole
 					h[2][1].push_back(i);
 				}
@@ -277,6 +276,17 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 				}
 				else { //na dole
 					h[0][1].push_back(i);
+				}
+			}
+			else { //byc moze
+				if(Lhei>Mhei && Lhei>Hhei) { //na dole
+					h[2][0].push_back(i);
+				}
+				else if(Mhei>Hhei) { //po srodku
+					h[1][0].push_back(i);
+				}
+				else { //na gorze
+					h[0][0].push_back(i);
 				}
 			}
 		}
@@ -301,13 +311,39 @@ bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	}
 	else return false;
 
-	if(p.y<0 || p.x<0) return false;// std::cout<<"\n***\n"<<"intersection: "<<p.y<<"\n***\n";
+	if(p.y<0 || p.x<0 || p.y>=829 || p.x>=622) return false;// std::cout<<"\n***\n"<<"intersection: "<<p.y<<"\n***\n";
 
 	return true;
 
 }
 
-void LinesCornersFitting::LinesCornersFitting_processor() {
+bool get4intersectionPoints(cv::Point2f &p0, cv::Point2f &p1, cv::Point2f &p2, cv::Point2f &p3,
+	std::vector<cv::Vec4i> lines, int ht, int vr, int hb, int vl) {
+	return (getIntersectionPoint(lines[ht],lines[vr],p0) &&
+		getIntersectionPoint(lines[vr],lines[hb],p1) &&
+		getIntersectionPoint(lines[hb],lines[vl],p2) &&
+		getIntersectionPoint(lines[vl],lines[ht],p3));
+}
+
+bool doorProportionTest(cv::Point2f p0, cv::Point2f p1, cv::Point2f p2, cv::Point2f p3, float lower, float higher) {
+	return (getLength(p3,p2)/getLength(p3,p0)>lower && getLength(p3,p2)/getLength(p3,p0)<higher &&
+		getLength(p3,p2)/getLength(p2,p1)>lower && getLength(p3,p2)/getLength(p2,p1)<higher &&
+		getLength(p0,p1)/getLength(p0,p3)>lower && getLength(p0,p1)/getLength(p0,p3)<higher &&
+		getLength(p0,p1)/getLength(p2,p1)>lower && getLength(p0,p1)/getLength(p2,p1)<higher);
+}
+
+void drawPoly(cv::Mat &img, std::vector<cv::Point2f> points, cv::Scalar color) {
+	cv::Point poly_points[1][points.size()];
+	for(int i=0; i<points.size(); ++i) {
+		poly_points[0][i] = cv::Point(points[i]);
+	}
+	const cv::Point* ppt[1] = {poly_points[0]};
+	int s = points.size();
+	int npt[] = {s};
+	cv::fillPoly(img,ppt,npt,1,color);
+}
+
+void LinesCornersFitting2::LinesCornersFitting2_processor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();
 	std::vector<cv::Point2f> corners = in_corners.read();
@@ -367,8 +403,10 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		corners_check[lines_pairs[i].second][lines_pairs[i].first] = true;
 	}
 	std::vector<std::vector<std::vector<cv::Vec4i > > > good_doors;
+	//good_doors[quality][door_number][line_number]
 	good_doors.resize(5);
-	std::vector<std::vector<std::vector<cv::Point2f> > > good_corners(5);
+	std::vector<std::vector<std::vector<cv::Point2f> > > good_corners;
+	//good_corners[quality][door_number][corner_number]
 	good_corners.resize(5);
 
 	for(int ht=0; ht<horizontal[0][1].size(); ++ht) {
@@ -382,21 +420,11 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 					if((lines[ht_line][0]+lines[ht_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
 						(lines[ht_line][0]+lines[ht_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2]) && 
 						(lines[hb_line][0]+lines[hb_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
-						(lines[hb_line][0]+lines[hb_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2])/* &&
-						(lines[vl_line][1]+lines[vl_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
-						(lines[vl_line][1]+lines[vl_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3]) &&
-						(lines[vr_line][1]+lines[vr_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
-						(lines[vr_line][1]+lines[vr_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3])*/) {
+						(lines[hb_line][0]+lines[hb_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2])) {
 							int q=0;
 							cv::Point2f p0, p1, p2, p3;
-							if(getIntersectionPoint(lines[ht_line],lines[vr_line],p0) &&
-								getIntersectionPoint(lines[vr_line],lines[hb_line],p1) &&
-								getIntersectionPoint(lines[hb_line],lines[vl_line],p2) &&
-								getIntersectionPoint(lines[vl_line],lines[ht_line],p3)) {
-									if(getLength(p3,p2)/getLength(p3,p0)>1.5 && getLength(p3,p2)/getLength(p3,p0)<3 &&
-										getLength(p3,p2)/getLength(p2,p1)>1.5 && getLength(p3,p2)/getLength(p2,p1)<3 &&
-										getLength(p0,p1)/getLength(p0,p3)>1.5 && getLength(p0,p1)/getLength(p0,p3)<3 &&
-										getLength(p0,p1)/getLength(p2,p1)>1.5 && getLength(p0,p1)/getLength(p2,p1)<3) {
+							if(get4intersectionPoints(p0, p1, p2, p3, lines, ht_line, vr_line, hb_line, vl_line)) {
+									if(doorProportionTest(p0, p1, p2, p3, 1.5, 3)) {
 										if(getLength(lines[ht_line])/getLength(p3,p0)>0.3 &&
 											getLength(lines[hb_line])/getLength(p2,p1)>0.3 &&
 											getLength(lines[vr_line])/getLength(p0,p1)>0.3 &&
@@ -429,15 +457,15 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		}
 	}
 
-	int best_idx=4;
-	for(best_idx=4; good_doors[best_idx].size()==0 && best_idx>0; --best_idx);
-	//std::cout<<"\n *** best quality: "<<best_idx<<", doors: "<<good_doors[best_idx].size()<<" ***\n";
+	int best_quality=4;
+	for(best_quality=4; good_doors[best_quality].size()==0 && best_quality>0; --best_quality);
+	//std::cout<<"\n *** best quality: "<<best_quality<<", doors: "<<good_doors[best_quality].size()<<" ***\n";
 	
 
-	if(good_doors[best_idx].size()==0 || best_idx==0) {
+	if(good_doors[best_quality].size()==0 || best_quality==0) {
 		std::vector<std::vector<std::vector<cv::Vec4i > > > good_doors2;
 		good_doors2.resize(5);
-		std::vector<std::vector<std::vector<cv::Point2f> > > good_corners2(5);
+		std::vector<std::vector<std::vector<cv::Point2f> > > good_corners2;
 		good_corners2.resize(5);
 
 		horizontal[0][1].insert(horizontal[0][1].end(),horizontal[0][0].begin(),horizontal[0][0].end());
@@ -455,21 +483,11 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 					if((lines[ht_line][0]+lines[ht_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
 						(lines[ht_line][0]+lines[ht_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2]) && 
 						(lines[hb_line][0]+lines[hb_line][2])/2>std::min(lines[vl_line][0],lines[vl_line][2]) &&
-						(lines[hb_line][0]+lines[hb_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2]) /*&&
-						(lines[vl_line][1]+lines[vl_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
-						(lines[vl_line][1]+lines[vl_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3]) &&
-						(lines[vr_line][1]+lines[vr_line][3]/2)>std::min(lines[ht_line][1],lines[ht_line][3]) &&
-						(lines[vr_line][1]+lines[vr_line][3]/2)<std::max(lines[hb_line][1],lines[hb_line][3])*/) {
+						(lines[hb_line][0]+lines[hb_line][2])/2<std::max(lines[vr_line][0],lines[vr_line][2])) {
 							int q=0;
 							cv::Point2f p0, p1, p2, p3;
-							if(getIntersectionPoint(lines[ht_line],lines[vr_line],p0) &&
-								getIntersectionPoint(lines[vr_line],lines[hb_line],p1) &&
-								getIntersectionPoint(lines[hb_line],lines[vl_line],p2) &&
-								getIntersectionPoint(lines[vl_line],lines[ht_line],p3)) {
-								if(getLength(p3,p2)/getLength(p3,p0)>1.5 && getLength(p3,p2)/getLength(p3,p0)<3 &&
-									getLength(p3,p2)/getLength(p2,p1)>1.5 && getLength(p3,p2)/getLength(p2,p1)<3 &&
-									getLength(p0,p1)/getLength(p0,p3)>1.5 && getLength(p0,p1)/getLength(p0,p3)<3 &&
-									getLength(p0,p1)/getLength(p2,p1)>1.5 && getLength(p0,p1)/getLength(p2,p1)<3) {
+							if(get4intersectionPoints(p0, p1, p2, p3, lines, ht_line, vr_line, hb_line, vl_line)) {
+								if(doorProportionTest(p0, p1, p2, p3, 1.5, 3)) {
 
 									if(getLength(lines[ht_line])/getLength(p3,p0)>0.3 &&
 										getLength(lines[hb_line])/getLength(p2,p1)>0.3 &&
@@ -502,72 +520,38 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 				}
 			}
 		}
-		int best_idx2;
-		for(best_idx2=4; good_doors2[best_idx2].size()==0 && best_idx2>0; --best_idx2);
-		//std::cout<<"\n *** best quality 2: "<<best_idx2<<", doors: "<<good_doors2[best_idx2].size()<<" ***\n";
-		if(good_doors[best_idx].size()==0) {
+		int best_quality2;
+		for(best_quality2=4; good_doors2[best_quality2].size()==0 && best_quality2>0; --best_quality2);
+		//std::cout<<"\n *** best quality 2: "<<best_quality2<<", doors: "<<good_doors2[best_quality2].size()<<" ***\n";
+		if(good_doors[best_quality].size()==0) {
 			good_doors = good_doors2;
 			good_corners = good_corners2;
-			best_idx = best_idx2;
+			best_quality = best_quality2;
 		}
 		else {
-			good_doors[best_idx+1] = good_doors[best_idx];
-			good_doors[best_idx] = good_doors2[best_idx2];
-			good_corners[best_idx+1] = good_corners[best_idx];
-			good_corners[best_idx] = good_corners2[best_idx2];
-			best_idx = best_idx + 1;
+			good_doors[best_quality+1] = good_doors[best_quality];
+			good_doors[best_quality] = good_doors2[best_quality2];
+			good_corners[best_quality+1] = good_corners[best_quality];
+			good_corners[best_quality] = good_corners2[best_quality2];
+			best_quality = best_quality + 1;
 		}
 	}
 
-	if(best_idx>0) {
-		good_doors[best_idx].insert(good_doors[best_idx].end(),good_doors[best_idx-1].begin(),good_doors[best_idx-1].end());
-		good_corners[best_idx].insert(good_corners[best_idx].end(),good_corners[best_idx-1].begin(),good_corners[best_idx-1].end());
-	}
-
-	//std::cout<<"\n *** best doors: "<<good_doors[best_idx].size()<<" ***\n";
-	int best_door=-1;
-	if(good_doors[best_idx].size()>1) {
-		std::vector<float> avgs;
-		std::vector<float> devs;
-		cv::Mat mask, gray;
-		cv::cvtColor(img,gray,CV_BGR2GRAY);
-		cv::GaussianBlur(gray,gray,cv::Size(9,9),0,0);
-		for(int i=0; i<good_doors[best_idx].size(); ++i) {
-			mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
-			cv::Point mask_points[1][4];
-			mask_points[0][0] = good_corners[best_idx][i][0];
-			mask_points[0][1] = good_corners[best_idx][i][1];
-			mask_points[0][2] = good_corners[best_idx][i][2];
-			mask_points[0][3] = good_corners[best_idx][i][3];
-			const cv::Point* ppt[1] = {mask_points[0]};
-			int npt[] = {4};
-			cv::fillPoly(mask,ppt,npt,1,1);
-			cv::Scalar m;// = cv::mean(gray,mask);
-			cv::Scalar d;
-			cv::meanStdDev(gray,m,d,mask);
-			avgs.push_back(m[0]);
-			devs.push_back(d[0]);
-		}
-		/*std::cout<<"\n";
-		for(int i=0; i<avgs.size(); ++i) std::cout<<avgs[i]<<"-"<<devs[i]<<"\t";
-		std::cout<<"\n";*/
-
-		best_door=0;
-		for(int i=1; i<devs.size(); ++i) {
-			if(devs[i]<devs[best_door]) best_door=i;
-		}
+	if(best_quality>0) {
+		good_doors[best_quality].insert(good_doors[best_quality].end(),good_doors[best_quality-1].begin(),good_doors[best_quality-1].end());
+		good_corners[best_quality].insert(good_corners[best_quality].end(),good_corners[best_quality-1].begin(),good_corners[best_quality-1].end());
 	}
 
 	std::vector<std::vector<int> > door_groups;
-	if(good_doors[best_idx].size()>1) {
+	if(good_doors[best_quality].size()>1) {
 		std::vector<cv::Mat> shapes;
-		for(int i=0; i<good_doors[best_idx].size(); ++i) {
+		for(int i=0; i<good_doors[best_quality].size(); ++i) {
 			cv::Mat shape = cv::Mat::zeros(img.rows,img.cols,CV_8U);
 			cv::Point mask_points[1][4];
-			mask_points[0][0] = cv::Point(good_corners[best_idx][i][0]);
-			mask_points[0][1] = cv::Point(good_corners[best_idx][i][1]);
-			mask_points[0][2] = cv::Point(good_corners[best_idx][i][2]);
-			mask_points[0][3] = cv::Point(good_corners[best_idx][i][3]);
+			mask_points[0][0] = cv::Point(good_corners[best_quality][i][0]);
+			mask_points[0][1] = cv::Point(good_corners[best_quality][i][1]);
+			mask_points[0][2] = cv::Point(good_corners[best_quality][i][2]);
+			mask_points[0][3] = cv::Point(good_corners[best_quality][i][3]);
 			const cv::Point* ppt[1] = {mask_points[0]};
 			int npt[] = {4};
 			cv::fillPoly(shape,ppt,npt,1,cv::Scalar(255,255,255));
@@ -588,10 +572,10 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 		diffs[shapes.size()-1][shapes.size()-1]=0;
 
 		
-		for(int i=0; i<good_doors[best_idx].size()-1; ++i) {
+		for(int i=0; i<good_doors[best_quality].size()-1; ++i) {
 			std::vector<int> group;
 			group.push_back(i);
-			for(int j=i+1; j<good_doors[best_idx].size(); ++j) {
+			for(int j=i+1; j<good_doors[best_quality].size(); ++j) {
 				bool add = true;
 				for(int k=0; k<group.size(); ++k) {
 					if(diffs[i][j]<0.95) {
@@ -606,32 +590,17 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 			door_groups.push_back(group);
 		}
 		
-		/*std::cout<<"\n$$$$$$\n";
-		for(int i=0; i<door_groups.size()-1; ++i) {
-			for(int j=0; j<door_groups[i].size(); ++j) {
-				std::cout<<door_groups[i][j]<<" ";
-			}
-			std::cout<<"\n";
-		}
-		std::cout<<"\n$$$$$$\n";*/
+
 
 
 		
-		/*std::cout<<"\n$$$$$$\n";
-		for(int i=0; i<shapes.size(); ++i) {
-			for(int j=0; j<shapes.size(); ++j) {
-				std::cout<<std::setw(10)<<diffs[i][j]<<" ";
-			}
-			std::cout<<"\n";
-		}
-		std::cout<<"\n$$$$$$\n";*/
+		
 	}
-	else{
+	else if(good_doors[best_quality].size()==1){
 		std::vector<int> group;
 		group.push_back(0);
 		door_groups.push_back(group);
 	}
-	
 
 	int max_group=0;
 	for(int i=1; i<door_groups.size(); ++i) {
@@ -640,130 +609,159 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 
 	//tutaj sprawdzac wariancje z barwy
 
+	int best_group=0;
+	std::vector<float> devs;
+	cv::Mat mask, hsv, hsv_split[3];
+	cv::cvtColor(img,hsv,CV_BGR2HSV);
+	cv::split(hsv, hsv_split);
+	for(int g=0; g<door_groups.size(); ++g) {
+		float dev_sum = 0.0;
+		for(int d=0; d<door_groups[g].size(); ++d) {
+			mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
+			std::cout<<"\n\n"<<"best_quality="<<best_quality<<", <"<<good_corners.size()<<"\n";
+			std::cout<<"g="<<g<<", <"<<door_groups.size()<<"\n";
+			std::cout<<"d="<<d<<", <"<<door_groups[g].size()<<"\n";
+			std::cout<<"door_groups[g][d]="<<door_groups[g][d]<<", <"<<good_corners[best_quality].size()<<"\n\n\n";
+			drawPoly(mask,good_corners[best_quality][door_groups[g][d]], cv::Scalar(255,255,255));
+			cv::Scalar mean, dev;
+			cv::meanStdDev(hsv_split[hsv_channel],mean,dev,mask);
+			dev_sum += dev[0];
+		}
+		dev_sum /= float(door_groups[g].size());
+		devs.push_back(dev_sum);
+	}
+	for(int i=1; i<devs.size(); ++i) {
+		if(devs[i]<devs[best_group]) best_group=i;
+	}
 
 	//********************
 
-
-	std::vector<cv::Point2f> final_door = good_corners[best_idx][door_groups[max_group][0]];
-
-	for(int i=1; i<door_groups[max_group].size(); ++i) {
-		final_door[0].x += good_corners[best_idx][door_groups[max_group][i]][0].x;
-		final_door[0].y += good_corners[best_idx][door_groups[max_group][i]][0].y;
-		final_door[1].x += good_corners[best_idx][door_groups[max_group][i]][1].x;
-		final_door[1].y += good_corners[best_idx][door_groups[max_group][i]][1].y;
-		final_door[2].x += good_corners[best_idx][door_groups[max_group][i]][2].x;
-		final_door[2].y += good_corners[best_idx][door_groups[max_group][i]][2].y;
-		final_door[3].x += good_corners[best_idx][door_groups[max_group][i]][3].x;
-		final_door[3].y += good_corners[best_idx][door_groups[max_group][i]][3].y;
-		
-	}
-	
-	final_door[0].x /= door_groups[max_group].size();
-	final_door[0].y /= door_groups[max_group].size();
-	final_door[1].x /= door_groups[max_group].size();
-	final_door[1].y /= door_groups[max_group].size();
-	final_door[2].x /= door_groups[max_group].size();
-	final_door[2].y /= door_groups[max_group].size();
-	final_door[3].x /= door_groups[max_group].size();
-	final_door[3].y /= door_groups[max_group].size();
+	if(dev_choice) max_group = best_group;
+	std::vector<cv::Point2f> final_door;
+	if(good_doors[best_quality].size()>0)
+		{
+			final_door = good_corners[best_quality][door_groups[max_group][0]];
 
 
-	cv::line(img,final_door[0],final_door[1],cv::Scalar(255,0,255),10);
-	cv::line(img,final_door[1],final_door[2],cv::Scalar(255,0,255),10);
-	cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
-	cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
-
-	//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
-
-
-
-	//dwa sprawdzenia:
-	//1. podobna (mala) wariancja (np. posortowac wszesniej i znalexc miejsce skoku)
-	//2. wsrod tych z podobna wariancja wyrzucic te, ktore maja rozne pola	
-
-	/*if(good_corners[best_idx].size()>0) {
-		int idx = prop;
-		if(idx>=good_corners[best_idx].size()) idx = good_corners[best_idx].size()-1;
-
-		cv::Scalar color = cv::Scalar(0,0,255);
-		cv::line(img,good_corners[best_idx][idx][0],good_corners[best_idx][idx][1],color,3);
-		cv::line(img,good_corners[best_idx][idx][1],good_corners[best_idx][idx][2],color,3);
-		cv::line(img,good_corners[best_idx][idx][2],good_corners[best_idx][idx][3],color,3);
-		cv::line(img,good_corners[best_idx][idx][3],good_corners[best_idx][idx][0],color,3);
-
-		color = cv::Scalar(255,0,0);
-		if(door_groups.size()>0) {
-			for(int i=0; i<door_groups[max_group].size(); ++i) {
-				cv::line(img,good_corners[best_idx][door_groups[max_group][i]][0],good_corners[best_idx][door_groups[max_group][i]][1],color,3);
-				cv::line(img,good_corners[best_idx][door_groups[max_group][i]][1],good_corners[best_idx][door_groups[max_group][i]][2],color,3);
-				cv::line(img,good_corners[best_idx][door_groups[max_group][i]][2],good_corners[best_idx][door_groups[max_group][i]][3],color,3);
-				cv::line(img,good_corners[best_idx][door_groups[max_group][i]][3],good_corners[best_idx][door_groups[max_group][i]][0],color,3);
+			for(int i=1; i<door_groups[max_group].size(); ++i) {
+				final_door[0].x += good_corners[best_quality][door_groups[max_group][i]][0].x;
+				final_door[0].y += good_corners[best_quality][door_groups[max_group][i]][0].y;
+				final_door[1].x += good_corners[best_quality][door_groups[max_group][i]][1].x;
+				final_door[1].y += good_corners[best_quality][door_groups[max_group][i]][1].y;
+				final_door[2].x += good_corners[best_quality][door_groups[max_group][i]][2].x;
+				final_door[2].y += good_corners[best_quality][door_groups[max_group][i]][2].y;
+				final_door[3].x += good_corners[best_quality][door_groups[max_group][i]][3].x;
+				final_door[3].y += good_corners[best_quality][door_groups[max_group][i]][3].y;
+				
 			}
-		}
-		
-
-		
-	}*/
-	/*if(good_doors[best_idx].size()>0) {
-		int idx;
-		if(best_door>-1) idx = best_door;
-		else idx = prop;
-		if(idx>=good_doors[best_idx].size()) idx = good_doors[best_idx].size()-1;
-		for(int j=0; j<good_doors[best_idx][idx].size(); ++j) {
-			cv::Point p1 = cv::Point(good_doors[best_idx][idx][j][0],good_doors[best_idx][idx][j][1]);
-			cv::Point p2 = cv::Point(good_doors[best_idx][idx][j][2],good_doors[best_idx][idx][j][3]);
-			cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
-		}
-	}*/
+			
+			final_door[0].x /= door_groups[max_group].size();
+			final_door[0].y /= door_groups[max_group].size();
+			final_door[1].x /= door_groups[max_group].size();
+			final_door[1].y /= door_groups[max_group].size();
+			final_door[2].x /= door_groups[max_group].size();
+			final_door[2].y /= door_groups[max_group].size();
+			final_door[3].x /= door_groups[max_group].size();
+			final_door[3].y /= door_groups[max_group].size();
 
 
-	/*for(int side=0; side<vertical.size(); ++side) {
-		for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
-			for(int l=0; l<vertical[side][prob1].size(); ++l) {
-				int idx = vertical[side][prob1][l];
-				cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
-				cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
-				cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
-				cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
-				if(side==0) {
-					if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-				}
-				else if(side==1) {
-					if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-				}
-				else if(side==2) {
-					if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-				}
-			}
-		}
-	}
+			cv::line(img,final_door[0],final_door[1],cv::Scalar(255,0,255),10);
+			cv::line(img,final_door[1],final_door[2],cv::Scalar(255,0,255),10);
+			cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
+			cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
 
-	for(int hei=0; hei<horizontal.size(); ++hei) {
-		for(int prob1=0; prob1<horizontal[hei].size(); ++prob1) {
-			for(int l=0; l<horizontal[hei][prob1].size(); ++l) {
-				int idx = horizontal[hei][prob1][l];
-				cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
-				cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
-				cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2+10);
-				cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
-				if(hei==0) {
-					if(prob1==0) cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+			//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
+
+
+
+			//dwa sprawdzenia:
+			//1. podobna (mala) wariancja (np. posortowac wszesniej i znalexc miejsce skoku)
+			//2. wsrod tych z podobna wariancja wyrzucic te, ktore maja rozne pola	
+
+			/*if(good_corners[best_quality].size()>0) {
+				int idx = prop;
+				if(idx>=good_corners[best_quality].size()) idx = good_corners[best_quality].size()-1;
+
+				cv::Scalar color = cv::Scalar(0,0,255);
+				cv::line(img,good_corners[best_quality][idx][0],good_corners[best_quality][idx][1],color,3);
+				cv::line(img,good_corners[best_quality][idx][1],good_corners[best_quality][idx][2],color,3);
+				cv::line(img,good_corners[best_quality][idx][2],good_corners[best_quality][idx][3],color,3);
+				cv::line(img,good_corners[best_quality][idx][3],good_corners[best_quality][idx][0],color,3);
+
+				color = cv::Scalar(255,0,0);
+				if(door_groups.size()>0) {
+					for(int i=0; i<door_groups[max_group].size(); ++i) {
+						cv::line(img,good_corners[best_quality][door_groups[max_group][i]][0],good_corners[best_quality][door_groups[max_group][i]][1],color,3);
+						cv::line(img,good_corners[best_quality][door_groups[max_group][i]][1],good_corners[best_quality][door_groups[max_group][i]][2],color,3);
+						cv::line(img,good_corners[best_quality][door_groups[max_group][i]][2],good_corners[best_quality][door_groups[max_group][i]][3],color,3);
+						cv::line(img,good_corners[best_quality][door_groups[max_group][i]][3],good_corners[best_quality][door_groups[max_group][i]][0],color,3);
+					}
 				}
-				else if(hei==1) {
-					if(prob1==0) cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+				
+
+				
+			}*/
+			/*if(good_doors[best_quality].size()>0) {
+				int idx;
+				if(best_door>-1) idx = best_door;
+				else idx = prop;
+				if(idx>=good_doors[best_quality].size()) idx = good_doors[best_quality].size()-1;
+				for(int j=0; j<good_doors[best_quality][idx].size(); ++j) {
+					cv::Point p1 = cv::Point(good_doors[best_quality][idx][j][0],good_doors[best_quality][idx][j][1]);
+					cv::Point p2 = cv::Point(good_doors[best_quality][idx][j][2],good_doors[best_quality][idx][j][3]);
+					cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
 				}
-				else if(hei==2) {
-					if(prob1==0) cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-					else if(prob1==1) cv::putText(img,"sureH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+			}*/
+
+
+			/*for(int side=0; side<vertical.size(); ++side) {
+				for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
+					for(int l=0; l<vertical[side][prob1].size(); ++l) {
+						int idx = vertical[side][prob1][l];
+						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
+						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
+						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
+						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
+						if(side==0) {
+							//if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(side==1) {
+							//if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(side==2) {
+							//if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+					}
 				}
 			}
+
+			for(int hei=0; hei<horizontal.size(); ++hei) {
+				for(int prob1=0; prob1<horizontal[hei].size(); ++prob1) {
+					for(int l=0; l<horizontal[hei][prob1].size(); ++l) {
+						int idx = horizontal[hei][prob1][l];
+						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
+						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
+						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2+10);
+						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
+						if(hei==0) {
+							//if(prob1==0) cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(hei==1) {
+							//if(prob1==0) cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(hei==2) {
+							//if(prob1==0) cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) cv::putText(img,"sureH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+					}
+				}
+			}*/
 		}
-	}*/
 
 	out_img.write(img);
 	out_door.write(final_door);
@@ -775,5 +773,5 @@ void LinesCornersFitting::LinesCornersFitting_processor() {
 
 
 
-} //: namespace LinesCornersFitting
+} //: namespace LinesCornersFitting2
 } //: namespace Processors

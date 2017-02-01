@@ -77,7 +77,7 @@
 					<param name="fast_param">6</param>
 				</Component>
 
-				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting" priority="110" bump="0">
+				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting2" priority="110" bump="0">
 				</Component>
 
 				<Component name="Model" type="DoorDetector:DoorModel" priority="113" bump="0">
@@ -170,7 +170,7 @@
 		<Source name="FuzzyFitting.out_door">
 			<sink>Elements.in_door</sink>
 		</Source>
-		<Source name="Elements.out_img">
+		<!--<Source name="Elements.out_img">
 			<sink>Window.in_img1</sink>
 		</Source>
 		<Source name="FuzzyFitting.out_door">
@@ -184,7 +184,7 @@
 		</Source>
 		<Source name="DrawSystem.out_csystem">
 			<sink>Window.in_draw0</sink>
-		</Source>
+		</Source>-->
 	</DataStreams>
 </Task>
 
