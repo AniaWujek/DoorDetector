@@ -20,3 +20,11 @@ ADD_COMPONENT(BehaviourSwitch)
 ADD_COMPONENT(Sequence)
 
 ADD_COMPONENT(LinesCornersFitting2)
+
+Add_COMPONENT(ModelSaver)
+
+ADD_COMPONENT(ModelLoader)
+
+ADD_COMPONENT(CvBruteForce)
+
+ADD_COMPONENT(ModelFaker)

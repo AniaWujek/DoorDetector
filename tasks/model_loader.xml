@@ -1,0 +1,38 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+		<Author>
+			<name>Maciej Stefańczyk</name>
+			<link></link>
+		</Author>
+		
+		<Description>
+			<brief>Feature matcher</brief>
+			<full></full>
+		</Description>
+	</Reference>
+	
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Main">
+			<Executor name="Processing"  period="1">
+				<Component name="Loader" type="DoorDetector:ModelLoader" priority="10" bump="0">
+					<param name="pattern">.*\.yml</param>
+					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
+				</Component>
+
+			</Executor>
+
+		</Subtask>
+	
+	</Subtasks>
+	
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+			
+	</DataStreams>
+</Task>
+
+
+
+
