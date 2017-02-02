@@ -126,7 +126,7 @@ void CvBruteForce::onNewImage()
 
 		int best_matches = 0;
 		for(int i=1; i<good_matchesVec.size(); ++i) {
-			if(good_matchesVec[i].size() > good_matchesVec[best_matches].size()) best_matches = i;
+			if(float(good_matchesVec[i].size())/float(matchesVec[i].size()) > float(good_matchesVec[best_matches].size())/float(matchesVec[best_matches].size())) best_matches = i;
 		}
 
 		CLOG(LNOTICE) << "Best model: " << best_matches;

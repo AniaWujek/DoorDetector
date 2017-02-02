@@ -16,23 +16,16 @@
 	<Subtasks>
 		<Subtask name="Main">
 			<Executor name="Processing"  period="1">
-				<Component name="Model" type="CvBasic:Sequence" priority="10" bump="0">
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/modele/</param>
-					<param name="sequence.pattern">.*\.png</param>
-					<param name="mode.loop">1</param>
-					<param name="mode.auto_next_image">0</param>
-				</Component>
+				
 
 				<Component name="Object" type="CvBasic:Sequence" priority="20" bump="0">
 					<param name="sequence.pattern">.*\.png</param>
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamek4/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamki/</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">0</param>
 				</Component>
 				
-				<Component name="ModelColor" type="CvBasic:CvColorConv" priority="30">
-					<param name="type">BGR2GRAY</param>
-				</Component>
+				
 				
 				<Component name="ObjectColor" type="CvBasic:CvColorConv" priority="40">
 					<param name="type">BGR2GRAY</param>
@@ -90,14 +83,9 @@
 	
 	<!-- pipes connecting datastreams -->
 	<DataStreams>
-		<Source name="Model.out_img">
-			<sink>Window.in_img0</sink>
-			<sink>ModelColor.in_img</sink>
-		</Source>
 		
-		<Source name="ModelColor.out_img">
-			<sink>Features.in_img_A</sink>			
-		</Source>
+		
+		
 
 		<Source name="FakeModel.out_img">
 			<sink>Transform.in_img</sink>
@@ -132,18 +120,8 @@
 		</Source>
 		
 		<Source name="Features.out_descriptors_B">
-			<sink>Matcher.in_descriptors1</sink>
-
 			<sink>Matcher2.in_descriptors</sink>
 		</Source>
-		
-		<Source name="Matcher.out_img">
-			<sink>Window.in_img2</sink>
-		</Source>
-		
-		<!--<Source name="Window.out_point0">
-			<sink>Detector.in_point</sink>
-		</Source>-->
 		
 		<Source name="Transform.out_draw">
 			<sink>Window.in_draw1</sink>
@@ -162,9 +140,6 @@
 			<sink>Window.in_img3</sink>
 		</Source>
 		
-		<!--<Source name="Matcher.out_matches">
-			<sink>Calc.in_matches</sink>
-		</Source>-->
 		<Source name="Matcher2.out_matches">
 			<sink>Calc.in_matches</sink>
 		</Source>

@@ -1,76 +1,59 @@
 <Task>
 	<!-- reference task information -->
-	<Reference>
-		<Author>
-			<name>Maciej Stefańczyk</name>
-			<link></link>
-		</Author>
-		
-		<Description>
-			<brief>Feature matcher</brief>
-			<full></full>
-		</Description>
-	</Reference>
-	
 	<!-- task definition -->
 	<Subtasks>
 		<Subtask name="Main">
-			<Executor name="Processing"  period="1">
-	
-				<Component name="Object" type="CvBasic:Sequence" priority="2" bump="0">
+			<Executor name="Processing"  period="1">				
+
+				<Component name="Object" type="CvBasic:Sequence" priority="10" bump="0">
 					<param name="sequence.pattern">.*\.png</param>
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamek1/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamki/</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">0</param>
-				</Component>
+				</Component>			
 				
-				<Component name="ObjectColor" type="CvBasic:CvColorConv" priority="4" bump="0">
+				<Component name="ObjectColor" type="CvBasic:CvColorConv" priority="20">
 					<param name="type">BGR2GRAY</param>
 				</Component>
-				
-				<Component name="Features" type="CvBasic:FeatureDetector" priority="30" bump="0">
-				</Component>
 
-				<Component name="ModelLoader" type="DoorDetector:ModelLoader" priority="35" bump="0">
-					<param name="pattern">.*\.yml</param>
-					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
-				</Component>
-				
-				<Component name="Matcher" type="DoorDetector:CvBruteForce" priority="40" bump="0">
-					<param name="print_stats">0</param>
-					<param name="recalculate_distance">0</param>
-					<param name="distance">50</param>
-				</Component>
-
-				<Component name="Calc" type="CvBasic:FindHomography" priority="50" bump="0">
-				</Component>
-
-				<Component name="FakeModel" type="DoorDetector:ModelFaker" priority="53" bump="0">
+				<Component name="FakeModel" type="DoorDetector:ModelFaker" priority="30" bump="0">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
 					<param name="positionX">648</param>
 					<param name="positionY">516</param>
-					<param name="radius">170</param>
+					<param name="radius">85</param>
+				</Component>
+				
+				<Component name="Features" type="CvBasic:FeatureDetector" priority="40">
 				</Component>
 
-				<Component name="Canny" type="CvBasic:CvCanny" priority="55" bump="0">
+				<Component name="ModelLoader" type="DoorDetector:ModelLoader" priority="50" bump="0">
+					<param name="pattern">.*\.yml</param>
+					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
 				</Component>
-
-				<Component name="Transform" type="CvBasic:PerspectiveTransform" priority="60" bump="0">
+				
+				<Component name="Matcher2" type="DoorDetector:CvBruteForce" priority="60" bump="0">
+					<param name="print_stats">0</param>
+					<param name="recalculate_distance">0</param>
+					<param name="distance">50</param>
 				</Component>
-
-				<Component name="EdgeColor" type="CvBasic:CvColorConv" priority="65" bump="0">
+				
+				<Component name="Calc" type="CvBasic:FindHomography" priority="70" bump="0">
+				</Component>
+				
+				<Component name="Transform" type="CvBasic:PerspectiveTransform" priority="80" bump="0">
+				</Component>
+				
+				<Component name="EdgeColor" type="CvBasic:CvColorConv" priority="90">
 					<param name="type">GRAY2BGR</param>
-				</Component>	
+				</Component>
+				
+				<Component name="Sum" type="CvBasic:Sum" priority="100" bump="0">
+				</Component>
 
-				<Component name="Sum" type="CvBasic:Sum" priority="70" bump="0">
-				</Component>			
-			</Executor>
-
-			<Executor name="Visualization" period="0.2">
-				<Component name="Window" type="CvBasic:CvWindow" priority="1" bump="0">
+				<Component name="Window" type="CvBasic:CvWindow" priority="110" bump="0">
 					<param name="count">3</param>
-					<param name="title">Object,Sum,Edges</param>
+					<param name="title">Object,Transform,Edges</param>
 					<param name="window_resize">1</param>
 				</Component>
 			</Executor>
@@ -79,18 +62,29 @@
 	</Subtasks>
 	
 	<!-- pipes connecting datastreams -->
-	<DataStreams>
-		<Source name="ModelLoader.out_features">
-			<sink>Matcher.in_featuresVec</sink>
-		</Source>
-		<Source name="ModelLoader.out_descriptors">
-			<sink>Matcher.in_descriptorsVec</sink>
+	<DataStreams>	
+
+		<Source name="FakeModel.out_img">
+			<sink>Transform.in_img</sink>
 		</Source>
 		
+
+		<Source name="ModelLoader.out_features">
+			<sink>Matcher2.in_featuresVec</sink>
+		</Source>
+
+		<Source name="ModelLoader.out_descriptors">
+			<sink>Matcher2.in_descriptorsVec</sink>
+		</Source>
+
+		<Source name="Matcher2.out_features">
+			<sink>Calc.in_features0</sink>
+		</Source>		
+		
 		<Source name="Object.out_img">
+			<sink>Window.in_img0</sink>
 			<sink>ObjectColor.in_img</sink>
 			<sink>Sum.in_img1</sink>
-			<sink>Window.in_img0</sink>
 		</Source>
 		
 		<Source name="ObjectColor.out_img">
@@ -98,46 +92,35 @@
 		</Source>
 		
 		<Source name="Features.out_features_B">
-			<sink>Matcher.in_features</sink>
 			<sink>Calc.in_features1</sink>
+			<sink>Matcher2.in_features</sink>
 		</Source>
 		
 		<Source name="Features.out_descriptors_B">
-			<sink>Matcher.in_descriptors</sink>
+			<sink>Matcher2.in_descriptors</sink>
 		</Source>
-
-		<Source name="EdgeColor.out_img">
-			<sink>Sum.in_img2</sink>
+		
+		<Source name="Transform.out_draw">
+			<sink>Window.in_draw0</sink>
 		</Source>
-
+		
 		<Source name="Transform.out_img">
 			<sink>EdgeColor.in_img</sink>
 		</Source>
-
-		<Source name="Matcher.out_matches">
-			<sink>Calc.in_matches</sink>
+		
+		<Source name="EdgeColor.out_img">
+			<sink>Sum.in_img2</sink>
+			<sink>Window.in_img2</sink>
 		</Source>
-
-		<Source name="Matcher.out_features">
-			<sink>Calc.in_features0</sink>
-		</Source>
-
-		<Source name="Canny.out_img">
-			<sink>Transform.in_img</sink>
-		</Source>
-
-		<Source name="FakeModel.out_img">
-			<sink>Canny.in_img</sink>
-		</Source>
-
+		
 		<Source name="Sum.out_img">
 			<sink>Window.in_img1</sink>
 		</Source>
-
-		<Source name="EdgeColor.out_img">
-			<sink>Window.in_img2</sink>
+		
+		<Source name="Matcher2.out_matches">
+			<sink>Calc.in_matches</sink>
 		</Source>
-
+		
 		<Source name="Calc.out_homography">
 			<sink>Transform.in_homography</sink>
 		</Source>
