@@ -770,10 +770,12 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			}*/
 		}
 
-	std::vector<float> doorVec;
+	std::vector<std::vector<float> > doorVec;
 	for(int i=0; i<final_door.size(); ++i) {
-		doorVec.push_back(final_door[i].x);
-		doorVec.push_back(final_door[i].y);
+		std::vector<float> p;
+		p.push_back(final_door[i].x);
+		p.push_back(final_door[i].y);
+		doorVec.push_back(p);
 	}
 
 	out_img.write(img);

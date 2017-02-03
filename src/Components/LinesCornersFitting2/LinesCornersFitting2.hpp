@@ -76,7 +76,7 @@ protected:
 	// Output data streams
 	Base::DataStreamOut<std::vector<cv::Point2f> > out_door;
 	Base::DataStreamOut<cv::Mat> out_img;
-	Base::DataStreamOut<std::vector<float> > out_doorVec;
+	Base::DataStreamOut<std::vector<std::vector<float> > > out_doorVec;
  
 	// Handlers
 

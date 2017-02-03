@@ -166,10 +166,12 @@ void DoorElementsROI::DoorElementsROI_processor() {
 	     	
 		}
 
-		std::vector<float> elements_centersVec;
+		std::vector<std::vector<float> > elements_centersVec;
 		for(int i=0; i<element_centers.size(); ++i) {
-			elements_centersVec.push_back(element_centers[i].x);
-			elements_centersVec.push_back(element_centers[i].y);
+			std::vector<float> p;
+			p.push_back(element_centers[i].x);
+			p.push_back(element_centers[i].y);
+			elements_centersVec.push_back(p);
 		}
 		out_img.write(img);
 		out_elementCenters.write(element_centers);

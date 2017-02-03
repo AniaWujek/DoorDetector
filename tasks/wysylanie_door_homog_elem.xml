@@ -103,17 +103,17 @@
 					<param name="epsilon">10</param>
 				</Component>
 
-				<Component name="DoorProxyHomog" type="ROSProxy:Float32MultiArrayProxy" priority="130" bump="0">
+				<Component name="DoorProxyHomog" type="ROSProxy:Float32MultiArrayProxy2" priority="130" bump="0">
 					<param name="ros.topic_name">door_homog_matrix</param>
 					<param name="ros.namespace">localization</param>
 				</Component>
 
-				<Component name="DoorProxyElements" type="ROSProxy:Float32MultiArrayProxy" priority="140" bump="0">
+				<Component name="DoorProxyElements" type="ROSProxy:Float32MultiArrayProxy2" priority="140" bump="0">
 					<param name="ros.topic_name">DoorElements_position</param>
 					<param name="ros.namespace">localization</param>
 				</Component>
 
-				<Component name="DoorProxy" type="ROSProxy:Float32MultiArrayProxy" priority="150" bump="0">
+				<Component name="DoorProxy" type="ROSProxy:Float32MultiArrayProxy2" priority="150" bump="0">
 					<param name="ros.topic_name">door_position</param>
 					<param name="ros.namespace">localization</param>
 				</Component>
