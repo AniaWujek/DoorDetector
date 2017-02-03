@@ -63,12 +63,16 @@
 					<param name="closeRatio">0.55</param>
 					<param name="collinearRatio">0.005</param>
 					<param name="shortRatio">0.0</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="ImproveLines2" type="DoorDetector:ImproveLines" priority="90" bump="0">
 					<param name="closeRatio">1.0</param>
 					<param name="collinearRatio">0.005</param>
 					<param name="shortRatio">0.15</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="Corners" type="DoorDetector:FindDoorCorners" priority="100" bump="0">
@@ -77,7 +81,9 @@
 					<param name="fast_param">6</param>
 				</Component>
 
-				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting" priority="110" bump="0">
+				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting2" priority="110" bump="0">
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="Model" type="DoorDetector:DoorModel" priority="113" bump="0">
@@ -97,12 +103,22 @@
 					<param name="epsilon">10</param>
 				</Component>
 
-				<Component name="Proxy" type="ROSProxy:Float32MultiArrayProxy" priority="130" bump="0">
+				<Component name="ProxyHomog" type="ROSProxy:Float32MultiArrayProxy" priority="130" bump="0">
+					<param name="ros.topic_name">door_homog_matrix</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+				<Component name="ProxyElements" type="ROSProxy:Float32MultiArrayProxy" priority="140" bump="0">
+					<param name="ros.topic_name">elements_position</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+				<Component name="ProxyDoor" type="ROSProxy:Float32MultiArrayProxy" priority="150" bump="0">
 					<param name="ros.topic_name">door_position</param>
 					<param name="ros.namespace">localization</param>
 				</Component>
-				
-				<Component name="Window" type="CvBasic:CvWindow" priority="150" bump="0">
+
+				<Component name="Window" type="CvBasic:CvWindow" priority="160" bump="0">
 					<param name="count">2</param>
 					<param name="title">system,elems</param>
 					<param name="window_resize">1</param>
@@ -130,8 +146,6 @@
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
-			<sink>ImproveLines.in_img</sink>
-			<sink>ImproveLines2.in_img</sink>
 		</Source>
 		<Source name="ColorConv.out_img">
 			<sink>Histogram.in_img</sink>			
@@ -191,7 +205,13 @@
 			<sink>Window.in_draw0</sink>
 		</Source>
 		<Source name="SolvePnP.out_homogMatrixVec">
-			<sink>Proxy.in_data</sink>
+			<sink>ProxyHomog.in_data</sink>
+		</Source>
+		<Source name="Elements.out_elementCentersVec">
+			<sink>ProxyElements.in_data</sink>
+		</Source>
+		<Source name="FuzzyFitting.out_doorVec">
+			<sink>ProxyDoor.in_data</sink>
 		</Source>
 	</DataStreams>
 </Task>

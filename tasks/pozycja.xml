@@ -63,12 +63,16 @@
 					<param name="closeRatio">0.55</param>
 					<param name="collinearRatio">0.005</param>
 					<param name="shortRatio">0.0</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="ImproveLines2" type="DoorDetector:ImproveLines" priority="90" bump="0">
 					<param name="closeRatio">1.0</param>
 					<param name="collinearRatio">0.005</param>
 					<param name="shortRatio">0.15</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="Corners" type="DoorDetector:FindDoorCorners" priority="100" bump="0">
@@ -78,6 +82,8 @@
 				</Component>
 
 				<Component name="FuzzyFitting" type="DoorDetector:LinesCornersFitting2" priority="110" bump="0">
+					<param name="width">622</param>
+					<param name="height">829</param>
 				</Component>
 
 				<Component name="Model" type="DoorDetector:DoorModel" priority="113" bump="0">
@@ -125,8 +131,6 @@
 		</Source>
 		<Source name="GaussianBlur.out_img">
 			<sink>ColorConv.in_img</sink>
-			<sink>ImproveLines.in_img</sink>
-			<sink>ImproveLines2.in_img</sink>
 		</Source>
 		<Source name="ColorConv.out_img">
 			<sink>Histogram.in_img</sink>			
@@ -170,7 +174,7 @@
 		<Source name="FuzzyFitting.out_door">
 			<sink>Elements.in_door</sink>
 		</Source>
-		<!--<Source name="Elements.out_img">
+		<Source name="Elements.out_img">
 			<sink>Window.in_img1</sink>
 		</Source>
 		<Source name="FuzzyFitting.out_door">
@@ -184,7 +188,7 @@
 		</Source>
 		<Source name="DrawSystem.out_csystem">
 			<sink>Window.in_draw0</sink>
-		</Source>-->
+		</Source>
 	</DataStreams>
 </Task>
 

@@ -23,10 +23,14 @@ ImproveLines::ImproveLines(const std::string & name) :
 		Base::Component(name) ,
 		collinearRatio("collinearRatio",0.6),
 		shortRatio("shortRatio",0.2),
-		closeRatio("closeRatio",0.9) {
+		closeRatio("closeRatio",0.9),
+		width("width", 100),
+		height("height", 100) {
 	registerProperty(collinearRatio);
 	registerProperty(shortRatio);
 	registerProperty(closeRatio);
+	registerProperty(width);
+	registerProperty(height);
 }
 
 ImproveLines::~ImproveLines() {
@@ -35,13 +39,13 @@ ImproveLines::~ImproveLines() {
 void ImproveLines::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("in_lines", &in_lines);
-	registerStream("in_img", &in_img);
+	//registerStream("in_img", &in_img);
 	registerStream("out_lines", &out_lines);
 	registerStream("out_linesDrawable", &out_linesDrawable);
 	// Register handlers
 	registerHandler("improveLinesProcessor", boost::bind(&ImproveLines::improveLinesProcessor, this));
 	addDependency("improveLinesProcessor", &in_lines);
-	addDependency("improveLinesProcessor", &in_img);
+	//addDependency("improveLinesProcessor", &in_img);
 
 }
 
@@ -201,11 +205,11 @@ void removeShort(std::vector<cv::Vec4i> &lines, int rows, int cols, float shortR
 void ImproveLines::improveLinesProcessor() {
 
 	std::vector<cv::Vec4i> lines = in_lines.read();
-	cv::Mat img = in_img.read().clone();
+	//cv::Mat img = in_img.read().clone();
 	std::vector<float> angles = getAngles(lines);
 
 	connectLines(lines,angles, collinearRatio, closeRatio);
-	removeShort(lines, img.rows, img.cols, shortRatio);	
+	removeShort(lines, height, width, shortRatio);	
 
 	Types::DrawableContainer c;
 	for( size_t i = 0; i < lines.size(); i++ )

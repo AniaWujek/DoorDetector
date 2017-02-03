@@ -76,7 +76,8 @@ protected:
 	// Output data streams
 	Base::DataStreamOut<std::vector<cv::Point2f> > out_door;
 	Base::DataStreamOut<cv::Mat> out_img;
-
+	Base::DataStreamOut<std::vector<float> > out_doorVec;
+ 
 	// Handlers
 
 	// Properties
@@ -84,10 +85,16 @@ protected:
 	Base::Property<int> quality;
 	Base::Property<bool> dev_choice;
 	Base::Property<int> hsv_channel;
+	Base::Property<int> width;
+	Base::Property<int> height;
 
 	
 	// Handlers
 	void LinesCornersFitting2_processor();
+
+	bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p);
+	void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<std::vector<std::vector<int> > > &h, std::vector<cv::Vec4i> &lines);
+	bool get4intersectionPoints(cv::Point2f &p0, cv::Point2f &p1, cv::Point2f &p2, cv::Point2f &p3,std::vector<cv::Vec4i> lines, int ht, int vr, int hb, int vl);
 
 };
 

@@ -42,6 +42,8 @@ void DoorElementsROI::prepareInterface() {
 	registerStream("in_img", &in_img);
 	registerStream("out_elementsROI", &out_elementsROI);
 	registerStream("out_img", &out_img);
+	registerStream("out_elementCenters", &out_elementCenters);
+	registerStream("out_elementCentersVec", &out_elementCentersVec);
 	// Register handlers
 	registerHandler("DoorElementsROI_processor", boost::bind(&DoorElementsROI::DoorElementsROI_processor, this));
 	addDependency("DoorElementsROI_processor", &in_door);
@@ -139,6 +141,7 @@ void DoorElementsROI::DoorElementsROI_processor() {
 
 		cv::morphologyEx(d,d,cv::MORPH_GRADIENT,cv::Mat(), cv::Point(-1, -1),2);
 
+		std::vector<cv::Point2f> element_centers;
 
 		cv::Mat drawing = cv::Mat::zeros(img.rows,img.cols,CV_8UC3);
 		cv::findContours(d,contours,hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
@@ -151,11 +154,26 @@ void DoorElementsROI::DoorElementsROI_processor() {
 
 	     	cv::Moments mu = cv::moments(contours[i]);
 	     	cv::Point2f center_mass = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
-	     	cv::circle(img,center_mass,5,cv::Scalar(255,255,255),-1);
 
-			cv::drawContours( img, contours, i, cv::Scalar(0,0,255), 3, 8, hierarchy, 0, cv::Point() );
+	     	if(center_mass.x>=0 && center_mass.x<img.cols && center_mass.y>=0 && center_mass.y<img.rows) {
+	     		cv::circle(img,center_mass,5,cv::Scalar(255,255,255),-1);
+
+		     	element_centers.push_back(center_mass);
+
+				cv::drawContours( img, contours, i, cv::Scalar(0,0,255), 3, 8, hierarchy, 0, cv::Point() );
+	     	}
+
+	     	
+		}
+
+		std::vector<float> elements_centersVec;
+		for(int i=0; i<element_centers.size(); ++i) {
+			elements_centersVec.push_back(element_centers[i].x);
+			elements_centersVec.push_back(element_centers[i].y);
 		}
 		out_img.write(img);
+		out_elementCenters.write(element_centers);
+		out_elementCentersVec.write(elements_centersVec);
 	}
 
 

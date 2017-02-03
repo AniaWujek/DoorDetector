@@ -73,7 +73,7 @@ protected:
 
 	// Input data streams
 	Base::DataStreamIn<std::vector<cv::Vec4i> > in_lines;
-	Base::DataStreamIn<cv::Mat> in_img;
+	//Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
 	Base::DataStreamOut<std::vector<cv::Vec4i> > out_lines;
@@ -85,6 +85,8 @@ protected:
 	Base::Property<float> collinearRatio;
 	Base::Property<float> shortRatio;
 	Base::Property<float> closeRatio;
+	Base::Property<int> width;
+	Base::Property<int> height;
 	
 	// Handlers
 	void improveLinesProcessor();

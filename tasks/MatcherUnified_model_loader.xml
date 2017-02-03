@@ -5,18 +5,18 @@
 		<Subtask name="Main">
 			<Executor name="Processing"  period="1">				
 
-				<Component name="Object" type="CvBasic:Sequence" priority="10" bump="0">
+				<Component name="ElementObject" type="CvBasic:Sequence" priority="10" bump="0">
 					<param name="sequence.pattern">.*\.png</param>
 					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamki/</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">0</param>
 				</Component>			
 				
-				<Component name="ObjectColor" type="CvBasic:CvColorConv" priority="20">
+				<Component name="ElementObjectColor" type="CvBasic:CvColorConv" priority="20">
 					<param name="type">BGR2GRAY</param>
 				</Component>
 
-				<Component name="FakeModel" type="DoorDetector:ModelFaker" priority="30" bump="0">
+				<Component name="ElementFakeModel" type="DoorDetector:ModelFaker" priority="30" bump="0">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
 					<param name="positionX">648</param>
@@ -24,34 +24,34 @@
 					<param name="radius">85</param>
 				</Component>
 				
-				<Component name="Features" type="CvBasic:FeatureDetector" priority="40">
+				<Component name="ElementFeatures" type="CvBasic:FeatureDetector" priority="40">
 				</Component>
 
-				<Component name="ModelLoader" type="DoorDetector:ModelLoader" priority="50" bump="0">
+				<Component name="ElementModelLoader" type="DoorDetector:ModelLoader" priority="50" bump="0">
 					<param name="pattern">.*\.yml</param>
 					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
 				</Component>
 				
-				<Component name="Matcher2" type="DoorDetector:CvBruteForce" priority="60" bump="0">
+				<Component name="ElementMatcher" type="DoorDetector:CvBruteForce" priority="60" bump="0">
 					<param name="print_stats">0</param>
 					<param name="recalculate_distance">0</param>
 					<param name="distance">50</param>
 				</Component>
 				
-				<Component name="Calc" type="CvBasic:FindHomography" priority="70" bump="0">
+				<Component name="ElementCalc" type="CvBasic:FindHomography" priority="70" bump="0">
 				</Component>
 				
-				<Component name="Transform" type="CvBasic:PerspectiveTransform" priority="80" bump="0">
+				<Component name="ElementTransform" type="CvBasic:PerspectiveTransform" priority="80" bump="0">
 				</Component>
 				
-				<Component name="EdgeColor" type="CvBasic:CvColorConv" priority="90">
+				<Component name="ElementEdgeColor" type="CvBasic:CvColorConv" priority="90">
 					<param name="type">GRAY2BGR</param>
 				</Component>
 				
-				<Component name="Sum" type="CvBasic:Sum" priority="100" bump="0">
+				<Component name="ElementSum" type="CvBasic:Sum" priority="100" bump="0">
 				</Component>
 
-				<Component name="Window" type="CvBasic:CvWindow" priority="110" bump="0">
+				<Component name="ElementWindow" type="CvBasic:CvWindow" priority="110" bump="0">
 					<param name="count">3</param>
 					<param name="title">Object,Transform,Edges</param>
 					<param name="window_resize">1</param>
@@ -64,65 +64,64 @@
 	<!-- pipes connecting datastreams -->
 	<DataStreams>	
 
-		<Source name="FakeModel.out_img">
-			<sink>Transform.in_img</sink>
-		</Source>
-		
-
-		<Source name="ModelLoader.out_features">
-			<sink>Matcher2.in_featuresVec</sink>
+		<Source name="ElementFakeModel.out_img">
+			<sink>ElementTransform.in_img</sink>
 		</Source>
 
-		<Source name="ModelLoader.out_descriptors">
-			<sink>Matcher2.in_descriptorsVec</sink>
+		<Source name="ElementModelLoader.out_features">
+			<sink>ElementMatcher.in_featuresVec</sink>
 		</Source>
 
-		<Source name="Matcher2.out_features">
-			<sink>Calc.in_features0</sink>
+		<Source name="ElementModelLoader.out_descriptors">
+			<sink>ElementMatcher.in_descriptorsVec</sink>
+		</Source>
+
+		<Source name="ElementMatcher.out_features">
+			<sink>ElementCalc.in_features0</sink>
 		</Source>		
 		
-		<Source name="Object.out_img">
-			<sink>Window.in_img0</sink>
-			<sink>ObjectColor.in_img</sink>
-			<sink>Sum.in_img1</sink>
+		<Source name="ElementObject.out_img">
+			<sink>ElementWindow.in_img0</sink>
+			<sink>ElementObjectColor.in_img</sink>
+			<sink>ElementSum.in_img1</sink>
 		</Source>
 		
-		<Source name="ObjectColor.out_img">
-			<sink>Features.in_img_B</sink>
+		<Source name="ElementObjectColor.out_img">
+			<sink>ElementFeatures.in_img_B</sink>
 		</Source>
 		
-		<Source name="Features.out_features_B">
-			<sink>Calc.in_features1</sink>
-			<sink>Matcher2.in_features</sink>
+		<Source name="ElementFeatures.out_features_B">
+			<sink>ElementCalc.in_features1</sink>
+			<sink>ElementMatcher.in_features</sink>
 		</Source>
 		
-		<Source name="Features.out_descriptors_B">
-			<sink>Matcher2.in_descriptors</sink>
+		<Source name="ElementFeatures.out_descriptors_B">
+			<sink>ElementMatcher.in_descriptors</sink>
 		</Source>
 		
-		<Source name="Transform.out_draw">
-			<sink>Window.in_draw0</sink>
+		<Source name="ElementTransform.out_draw">
+			<sink>ElementWindow.in_draw0</sink>
 		</Source>
 		
-		<Source name="Transform.out_img">
-			<sink>EdgeColor.in_img</sink>
+		<Source name="ElementTransform.out_img">
+			<sink>ElementEdgeColor.in_img</sink>
 		</Source>
 		
-		<Source name="EdgeColor.out_img">
-			<sink>Sum.in_img2</sink>
-			<sink>Window.in_img2</sink>
+		<Source name="ElementEdgeColor.out_img">
+			<sink>ElementSum.in_img2</sink>
+			<sink>ElementWindow.in_img2</sink>
 		</Source>
 		
-		<Source name="Sum.out_img">
-			<sink>Window.in_img1</sink>
+		<Source name="ElementSum.out_img">
+			<sink>ElementWindow.in_img1</sink>
 		</Source>
 		
-		<Source name="Matcher2.out_matches">
-			<sink>Calc.in_matches</sink>
+		<Source name="ElementMatcher.out_matches">
+			<sink>ElementCalc.in_matches</sink>
 		</Source>
 		
-		<Source name="Calc.out_homography">
-			<sink>Transform.in_homography</sink>
+		<Source name="ElementCalc.out_homography">
+			<sink>ElementTransform.in_homography</sink>
 		</Source>
 		
 	</DataStreams>

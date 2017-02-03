@@ -1,0 +1,3 @@
+1. do modelsaver: dopisać mat z obrazem canny modelu + wymiary elementu
+2. do modelloader: dopisać odczytywanie tych rzeczy, streamout z obrazem canny i streamout z wymiarami, wszystko to pójdzie do:
+3. nowy komponent tworzący model elementu do wrzucenia do solvepnp, model: cztery punkty

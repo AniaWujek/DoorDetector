@@ -21,10 +21,14 @@ LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 		prop("prop", 0),
 		quality("quality",3),
 		dev_choice("dev_choice", 0),
-		hsv_channel("hsv_channel", 0) {
+		hsv_channel("hsv_channel", 0),
+		width("width", 100),
+		height("height", 100) {
 	registerProperty(prop);
 	registerProperty(quality);
 	registerProperty(dev_choice);
+	registerProperty(width);
+	registerProperty(height);
 
 	hsv_channel.addConstraint("0");
 	hsv_channel.addConstraint("2");
@@ -43,6 +47,7 @@ void LinesCornersFitting2::prepareInterface() {
 	registerStream("out_door", &out_door);
 	registerStream("in_img", &in_img);
 	registerStream("out_img", &out_img);
+	registerStream("out_doorVec", &out_doorVec);
 	// Register handlers
 	registerHandler("LinesCornersFitting2_processor", boost::bind(&LinesCornersFitting2::LinesCornersFitting2_processor, this));
 	addDependency("LinesCornersFitting2_processor", &in_lines);
@@ -158,7 +163,7 @@ float getLength(cv::Vec4i line) {
 
 
 
-void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<std::vector<std::vector<int> > > &h, std::vector<cv::Vec4i> &lines) {
+void LinesCornersFitting2::check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<std::vector<std::vector<int> > > &h, std::vector<cv::Vec4i> &lines) {
 	for(int i=0; i<lines.size(); ++i) {
 
 		float a = getAngle(lines[i]);
@@ -170,10 +175,12 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 		angles[2] = mi_angle_V(a);
 
 		std::vector<float> sizes(4);
-		sizes[0] = mi_size_VS(s, 829.0);
-		sizes[1] = mi_size_S(s, 829.0);
-		sizes[2] = mi_size_M(s, 829.0);
-		sizes[3] = mi_size_B(s, 829.0);
+		float diag = sqrt(float(width*width)+float(height*height));
+		//float diag = height;
+		sizes[0] = mi_size_VS(s, diag);
+		sizes[1] = mi_size_S(s, diag);
+		sizes[2] = mi_size_M(s, diag);
+		sizes[3] = mi_size_B(s, diag);
 
 		//vertical
 
@@ -202,9 +209,9 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 
 		float Xpos = fabs(lines[i][0]+lines[i][2])/2.0;
 
-		float Lside = mi_Xlocation_L(Xpos,622.0);
-		float Mside = mi_Xlocation_M(Xpos,622.0);
-		float Rside = mi_Xlocation_R(Xpos,622.0);
+		float Lside = mi_Xlocation_L(Xpos,width);
+		float Mside = mi_Xlocation_M(Xpos,width);
+		float Rside = mi_Xlocation_R(Xpos,width);
 
 		if(Nver>Lver && Nver>Hver);//na pewno nie
 		else {
@@ -261,9 +268,9 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 
 		float Ypos = fabs(lines[i][1]+lines[i][3])/2.0;
 
-		float Hhei = mi_Ylocation_L(Ypos,829.0);
-		float Mhei = mi_Ylocation_M(Ypos,829.0);
-		float Lhei = mi_Ylocation_H(Ypos,829.0);
+		float Hhei = mi_Ylocation_L(Ypos,height);
+		float Mhei = mi_Ylocation_M(Ypos,height);
+		float Lhei = mi_Ylocation_H(Ypos,height);
 
 		if(Nhor>Lhor && Nhor>Hhor); //na pewno nie
 		else {			
@@ -293,7 +300,7 @@ void check_lines(std::vector<std::vector<std::vector<int> > > &v, std::vector<st
 	}
 }
 
-bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
+bool LinesCornersFitting2::getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	
 	float A1 = line1[1]-line1[3];
 	float B1 = line1[2]-line1[0];
@@ -311,13 +318,13 @@ bool getIntersectionPoint(cv::Vec4i line1, cv::Vec4i line2, cv::Point2f &p) {
 	}
 	else return false;
 
-	if(p.y<0 || p.x<0 || p.y>=829 || p.x>=622) return false;// std::cout<<"\n***\n"<<"intersection: "<<p.y<<"\n***\n";
+	if(p.y<0 || p.x<0 || p.y>=height || p.x>=width) return false;// std::cout<<"\n***\n"<<"intersection: "<<p.y<<"\n***\n";
 
 	return true;
 
 }
 
-bool get4intersectionPoints(cv::Point2f &p0, cv::Point2f &p1, cv::Point2f &p2, cv::Point2f &p3,
+bool LinesCornersFitting2::get4intersectionPoints(cv::Point2f &p0, cv::Point2f &p1, cv::Point2f &p2, cv::Point2f &p3,
 	std::vector<cv::Vec4i> lines, int ht, int vr, int hb, int vl) {
 	return (getIntersectionPoint(lines[ht],lines[vr],p0) &&
 		getIntersectionPoint(lines[vr],lines[hb],p1) &&
@@ -618,10 +625,10 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 		float dev_sum = 0.0;
 		for(int d=0; d<door_groups[g].size(); ++d) {
 			mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
-			std::cout<<"\n\n"<<"best_quality="<<best_quality<<", <"<<good_corners.size()<<"\n";
+			/*std::cout<<"\n\n"<<"best_quality="<<best_quality<<", <"<<good_corners.size()<<"\n";
 			std::cout<<"g="<<g<<", <"<<door_groups.size()<<"\n";
 			std::cout<<"d="<<d<<", <"<<door_groups[g].size()<<"\n";
-			std::cout<<"door_groups[g][d]="<<door_groups[g][d]<<", <"<<good_corners[best_quality].size()<<"\n\n\n";
+			std::cout<<"door_groups[g][d]="<<door_groups[g][d]<<", <"<<good_corners[best_quality].size()<<"\n\n\n";*/
 			drawPoly(mask,good_corners[best_quality][door_groups[g][d]], cv::Scalar(255,255,255));
 			cv::Scalar mean, dev;
 			cv::meanStdDev(hsv_split[hsv_channel],mean,dev,mask);
@@ -763,8 +770,15 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			}*/
 		}
 
+	std::vector<float> doorVec;
+	for(int i=0; i<final_door.size(); ++i) {
+		doorVec.push_back(final_door[i].x);
+		doorVec.push_back(final_door[i].y);
+	}
+
 	out_img.write(img);
 	out_door.write(final_door);
+	out_doorVec.write(doorVec);
 
 	
 

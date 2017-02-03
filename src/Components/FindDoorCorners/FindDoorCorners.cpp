@@ -133,6 +133,7 @@ void FindDoorCorners::findDoorCorners_processor() {
 
 								mask(cv::Rect(x_corner, y_corner, x_side, y_side)) = 1;
 								//cv::goodFeaturesToTrack(img,feature_point,1,0.99,100,mask,3,1,k_param);
+								//tez by zadzialalo, moze nawet lepiej, ale ttrwa bardzo dłuugo
 								cv::Mat roi = img(cv::Rect(x_corner, y_corner, x_side, y_side));
 								std::vector<cv::KeyPoint> keypoints;
 								cv::FAST(roi,keypoints,fast_param,1);

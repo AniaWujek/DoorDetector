@@ -78,9 +78,8 @@ void DoorModel::DoorModel_processor() {
 	if(points.size() == 4) {
 		door_model->setImagePoints(points);
 		out_doorModel.write(*door_model);
-		std::cout<<"\n *** \n"<<points<<"\n *** \n";
+		//std::cout<<"\n *** \n"<<points<<"\n *** \n";
 	}
-	else std::cout<<"!!!!!!!!!!!!!!!!!!!\n\n!!!!!!!!!!!!!!!";
 }
 
 

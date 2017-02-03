@@ -74,6 +74,8 @@ protected:
 	// Output data streams
 	Base::DataStreamOut<std::vector<std::vector<cv::Point2f> > > out_elementsROI;
 	Base::DataStreamOut<cv::Mat> out_img;
+	Base::DataStreamOut<std::vector<cv::Point2f> > out_elementCenters;
+	Base::DataStreamOut<std::vector<float> > out_elementCentersVec;
 
 	// Handlers
 
