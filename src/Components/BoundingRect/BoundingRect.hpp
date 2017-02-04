@@ -4,39 +4,38 @@
  * \author Anna
  */
 
-#ifndef DOORMODEL_HPP_
-#define DOORMODEL_HPP_
+#ifndef BOUNDINGRECT_HPP_
+#define BOUNDINGRECT_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
-#include "Types/Objects3D/Object3D.hpp"
 
 #include <opencv2/opencv.hpp>
 
 
 namespace Processors {
-namespace DoorModel {
+namespace BoundingRect {
 
 /*!
- * \class DoorModel
- * \brief DoorModel processor class.
+ * \class BoundingRect
+ * \brief BoundingRect processor class.
  *
  * 
  */
-class DoorModel: public Base::Component {
+class BoundingRect: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	DoorModel(const std::string & name = "DoorModel");
+	BoundingRect(const std::string & name = "BoundingRect");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~DoorModel();
+	virtual ~BoundingRect();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -69,33 +68,27 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<std::vector<cv::Point2f> > in_points;
+	Base::DataStreamIn<cv::Mat> in_img;
 
 	// Output data streams
-	Base::DataStreamOut<Types::Objects3D::Object3D> out_doorModel;
+	Base::DataStreamOut<std::vector<cv::Point2f>> out_rect;
 
 	// Handlers
 
 	// Properties
-	Base::Property<float> width;
-	Base::Property<float> height;
 
 	
 	// Handlers
-	void DoorModel_processor();
-
-	boost::shared_ptr<Types::Objects3D::Object3D> door_model;
-	void sizeCallback(float old_value, float new_value);
-	void initModel();
+	void BoundingRect_processor();
 
 };
 
-} //: namespace DoorModel
+} //: namespace BoundingRect
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("DoorModel", Processors::DoorModel::DoorModel)
+REGISTER_COMPONENT("BoundingRect", Processors::BoundingRect::BoundingRect)
 
-#endif /* DOORMODEL_HPP_ */
+#endif /* BOUNDINGRECT_HPP_ */

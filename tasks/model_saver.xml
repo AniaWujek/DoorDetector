@@ -27,6 +27,12 @@
 				<Component name="ModelColor" type="CvBasic:CvColorConv" priority="3">
 					<param name="type">BGR2GRAY</param>
 				</Component>
+
+				<Component name="Canny" type="CvBasic:CvCanny" priority="5" bump="0">
+				</Component>
+
+				<Component name="Box" type="DoorDetector:BoundingRect" priority="20" bump="0">
+				</Component>
 				
 				<Component name="Features" type="CvBasic:FeatureDetector" priority="30">
 				</Component>
@@ -56,6 +62,10 @@
 		
 		<Source name="ModelColor.out_img">
 			<sink>Features.in_img_A</sink>
+			<sink>Canny.in_img</sink>
+		</Source>
+		<Source name="Canny.out_img">
+			<sink>Box.in_img</sink>
 		</Source>
 		
 		<Source name="Features.out_features_A">
@@ -64,7 +74,12 @@
 		
 		<Source name="Features.out_descriptors_A">
 			<sink>Saver.in_descriptors</sink>
-		</Source>		
+		</Source>	
+
+		<Source name="Box.out_rect">
+			<sink>Saver.in_boundingRect</sink>
+		</Source>
+
 	</DataStreams>
 </Task>
 

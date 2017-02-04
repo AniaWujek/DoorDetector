@@ -32,6 +32,7 @@ void ModelSaver::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("in_features", &in_features);
 	registerStream("in_descriptors", &in_descriptors);
+	registerStream("in_boundingRect", &in_boundingRect);
 	// Register handlers
 	registerHandler("SaveFeatures", boost::bind(&ModelSaver::SaveFeatures, this));
 	registerHandler("addModel", boost::bind(&ModelSaver::addModel, this));
@@ -57,12 +58,13 @@ bool ModelSaver::onStart() {
 }
 
 void ModelSaver::SaveFeatures() {
-	if(allModels.size()>0 && allDescriptors.size()>0 && allModels.size()==allDescriptors.size()) {
+	if(allModels.size()>0 && allModels.size()==allDescriptors.size() && allModels.size()==allBoundingRect.size()) {
 		for(int model=0; model<allModels.size(); ++model) {
 			std::string file_path = std::string(path)+std::string("model_")+std::to_string(model)+std::string(".yml");
 			cv::FileStorage fs(file_path, cv::FileStorage::WRITE);
 			cv::write(fs,"keypoints", allModels[model].features);
 			cv::write(fs,"descriptors", allDescriptors[model]);
+			cv::write(fs,"boundingRect", allBoundingRect[model]);
 			fs.release();
 		}
 		
@@ -78,18 +80,30 @@ void ModelSaver::addModel() {
 		Types::Features model = in_features.read();
 		allModels.push_back(model);
 	}
+	else {
+		CLOG(LERROR) << "Empty feature buffer!";
+	}
 	if(!in_descriptors.empty()) {
 		cv::Mat descriptor = in_descriptors.read();
 		allDescriptors.push_back(descriptor);
 	}
 	else {
-		CLOG(LERROR) << "Empty buffers!";
+		CLOG(LERROR) << "Empty descriptors buffer!";
 	}
+	if(!in_boundingRect.empty()) {
+		std::vector<cv::Point2f> rect = in_boundingRect.read();
+		allBoundingRect.push_back(rect);
+	}
+	else {
+		CLOG(LERROR) << "Empty rect buffer!";
+	}
+	
 }
 
 void ModelSaver::clearAll() {
 	allModels.clear();
 	allDescriptors.clear();
+	allBoundingRect.clear();
 }
 
 

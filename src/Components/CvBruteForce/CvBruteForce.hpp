@@ -87,12 +87,15 @@ protected:
 	Base::DataStreamIn <cv::Mat, Base::DataStreamBuffer::Newest> in_descriptors;
 	Base::DataStreamIn <std::vector<cv::Mat>, Base::DataStreamBuffer::Newest> in_descriptorsVec;
 
+	Base::DataStreamIn <std::vector<std::vector<cv::Point2f> >, Base::DataStreamBuffer::Newest> in_rectVec;
+
 	/// Input data streams containing images
 
 	/// Output data stream - "matching" image
 	Base::DataStreamOut < std::vector<DMatch> > out_matches;
 	Base::DataStreamOut < Types::Features > out_features;
 	Base::DataStreamOut <cv::Mat> out_descriptors;
+	Base::DataStreamOut <std::vector<cv::Point2f>> out_rect;
 
 	/// Flag: automatic distance recalculation.
 	Base::Property<bool> distance_recalc;

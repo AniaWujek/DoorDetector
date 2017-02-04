@@ -13,7 +13,7 @@ ADD_COMPONENT(LinesCornersFitting)
 
 ADD_COMPONENT(DoorElementsROI)
 
-ADD_COMPONENT(DoorModel)
+ADD_COMPONENT(QuadModel)
 
 ADD_COMPONENT(BehaviourSwitch)
 
@@ -28,3 +28,5 @@ ADD_COMPONENT(ModelLoader)
 ADD_COMPONENT(CvBruteForce)
 
 ADD_COMPONENT(ModelFaker)
+
+ADD_COMPONENT(BoundingRect)

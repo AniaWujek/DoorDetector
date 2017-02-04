@@ -23,12 +23,16 @@ LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 		dev_choice("dev_choice", 0),
 		hsv_channel("hsv_channel", 0),
 		width("width", 100),
-		height("height", 100) {
+		height("height", 100),
+		size_ratio_min("size_ratio_min", 1.5),
+		size_ratio_max("size_ratio_max", 3.0) {
 	registerProperty(prop);
 	registerProperty(quality);
 	registerProperty(dev_choice);
 	registerProperty(width);
 	registerProperty(height);
+	registerProperty(size_ratio_min);
+	registerProperty(size_ratio_max);
 
 	hsv_channel.addConstraint("0");
 	hsv_channel.addConstraint("2");
@@ -431,7 +435,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 							int q=0;
 							cv::Point2f p0, p1, p2, p3;
 							if(get4intersectionPoints(p0, p1, p2, p3, lines, ht_line, vr_line, hb_line, vl_line)) {
-									if(doorProportionTest(p0, p1, p2, p3, 1.5, 3)) {
+									if(doorProportionTest(p0, p1, p2, p3, size_ratio_min, size_ratio_max)) {
 										if(getLength(lines[ht_line])/getLength(p3,p0)>0.3 &&
 											getLength(lines[hb_line])/getLength(p2,p1)>0.3 &&
 											getLength(lines[vr_line])/getLength(p0,p1)>0.3 &&
@@ -494,7 +498,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 							int q=0;
 							cv::Point2f p0, p1, p2, p3;
 							if(get4intersectionPoints(p0, p1, p2, p3, lines, ht_line, vr_line, hb_line, vl_line)) {
-								if(doorProportionTest(p0, p1, p2, p3, 1.5, 3)) {
+								if(doorProportionTest(p0, p1, p2, p3, size_ratio_min, size_ratio_max)) {
 
 									if(getLength(lines[ht_line])/getLength(p3,p0)>0.3 &&
 										getLength(lines[hb_line])/getLength(p2,p1)>0.3 &&

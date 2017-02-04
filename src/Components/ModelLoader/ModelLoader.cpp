@@ -31,6 +31,7 @@ void ModelLoader::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("out_features", &out_features);
 	registerStream("out_descriptors", &out_descriptors);
+	registerStream("out_boundingRect", &out_boundingRect);
 	// Register handlers
 	registerHandler("LoadModels", boost::bind(&ModelLoader::LoadModels, this));
 	addDependency("LoadModels", NULL);
@@ -76,16 +77,22 @@ void ModelLoader::ReloadModels() {
 	if(findFiles()) {
 		for(int file=0; file<files.size(); ++file) {
 			cv::FileStorage fs(files[file],cv::FileStorage::READ);
-			cv::FileNode fn = fs["keypoints"];
+
+			cv::FileNode fn = fs["keypoints"];			
 			std::vector<cv::KeyPoint> kp;
 			cv::read(fn, kp);
 			Types::Features f(kp);
 			features.push_back(f);
+
 			fn = fs["descriptors"];
 			cv::Mat d;
 			cv::read(fn, d);
 			descriptors.push_back(d);
-			fs.release();
+
+			fn = fs["boundingRect"];
+			std::vector<cv::Point2f> b;
+			cv::read(fn, b);
+			boundingRect.push_back(b);
 		}
 		
 	}
@@ -96,6 +103,8 @@ void ModelLoader::LoadModels() {
 	CLOG(LNOTICE) << files.size() << " files, " << descriptors.size() << " descriptors, " << features.size() << " features";
 	out_descriptors.write(descriptors);
 	out_features.write(features);
+	out_boundingRect.write(boundingRect);
+
 }
 
 

@@ -42,6 +42,7 @@ void CvBruteForce::prepareInterface() {
 	addDependency("onNewImage", &in_featuresVec);
 	addDependency("onNewImage", &in_descriptors);
 	addDependency("onNewImage", &in_descriptorsVec);
+	addDependency("onNewImage", &in_rectVec);
 
 	// Input and output data streams.
 	registerStream("in_features", &in_features);
@@ -51,6 +52,8 @@ void CvBruteForce::prepareInterface() {
 	registerStream("out_matches", &out_matches);
 	registerStream("out_features", &out_features);
 	registerStream("out_descriptors", &out_descriptors);
+	registerStream("in_rectVec", &in_rectVec);
+	registerStream("out_rect", &out_rect);
 }
 
 bool CvBruteForce::onInit() {
@@ -142,9 +145,14 @@ void CvBruteForce::onNewImage()
 
 		// Write the result to the output.
 		if(model_number>=0) best_matches = model_number;
+
+		std::vector<std::vector<cv::Point2f> > rects = in_rectVec.read();
+
+
 		out_matches.write(good_matchesVec[best_matches]);
 		out_features.write(featuresVec[best_matches]);
 		out_descriptors.write(descriptorsVec[best_matches]);
+		out_rect.write(rects[best_matches]);
 	} catch (...) {
 		CLOG(LERROR) << "CvBruteForce::onNewImage failed\n";
 	}

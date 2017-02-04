@@ -4,40 +4,39 @@
  * \author Anna
  */
 
-#ifndef MODELLOADER_HPP_
-#define MODELLOADER_HPP_
+#ifndef QUADMODEL_HPP_
+#define QUADMODEL_HPP_
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
+#include "Types/Objects3D/Object3D.hpp"
 
 #include <opencv2/opencv.hpp>
 
-#include "Types/Features.hpp"
-
 
 namespace Processors {
-namespace ModelLoader {
+namespace QuadModel {
 
 /*!
- * \class ModelLoader
- * \brief ModelLoader processor class.
+ * \class QuadModel
+ * \brief QuadModel processor class.
  *
  * 
  */
-class ModelLoader: public Base::Component {
+class QuadModel: public Base::Component {
 public:
 	/*!
 	 * Constructor.
 	 */
-	ModelLoader(const std::string & name = "ModelLoader");
+	QuadModel(const std::string & name = "QuadModel");
 
 	/*!
 	 * Destructor
 	 */
-	virtual ~ModelLoader();
+	virtual ~QuadModel();
 
 	/*!
 	 * Prepare components interface (register streams and handlers).
@@ -70,39 +69,34 @@ protected:
 
 
 	// Input data streams
+	Base::DataStreamIn<std::vector<cv::Point2f> > in_points;
 
 	// Output data streams
-	Base::DataStreamOut<std::vector<Types::Features>> out_features;
-	Base::DataStreamOut<std::vector<cv::Mat> > out_descriptors;
-	Base::DataStreamOut<std::vector<std::vector<cv::Point2f> > > out_boundingRect;
+	Base::DataStreamOut<Types::Objects3D::Object3D> out_model;
 
 	// Handlers
 
 	// Properties
-	Base::Property<std::string> directory;
-	Base::Property<std::string> pattern;
+	Base::Property<float> width;
+	Base::Property<float> height;
+	Base::Property<int> type;
 
 	
 	// Handlers
-	void LoadModels();
-	void ReloadModels();
+	void QuadModel_processor();
 
-private:
-	bool findFiles();
-	std::vector<std::string> files;
-
-	std::vector<Types::Features> features;
-	std::vector<cv::Mat> descriptors;
-	std::vector<std::vector<cv::Point2f> > boundingRect;
+	boost::shared_ptr<Types::Objects3D::Object3D> model;
+	void sizeCallback(float old_value, float new_value);
+	void initModel();
 
 };
 
-} //: namespace ModelLoader
+} //: namespace QuadModel
 } //: namespace Processors
 
 /*
  * Register processor component.
  */
-REGISTER_COMPONENT("ModelLoader", Processors::ModelLoader::ModelLoader)
+REGISTER_COMPONENT("QuadModel", Processors::QuadModel::QuadModel)
 
-#endif /* MODELLOADER_HPP_ */
+#endif /* QUADMODEL_HPP_ */

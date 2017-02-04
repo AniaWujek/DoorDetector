@@ -71,15 +71,13 @@ protected:
 
 	// Output data streams
 	Base::DataStreamOut<cv::Mat> out_img;
+	Base::DataStreamIn<std::vector<cv::Point2f>, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> in_rect;
 
 	// Handlers
 
 	// Properties
-	Base::Property<int> positionX;
-	Base::Property<int> positionY;
 	Base::Property<int> width;
 	Base::Property<int> height;
-	Base::Property<int> radius;
 
 	
 	// Handlers

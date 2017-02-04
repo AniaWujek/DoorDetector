@@ -72,6 +72,7 @@ protected:
 	// Input data streams
 	Base::DataStreamIn<Types::Features, Base::DataStreamBuffer::Newest,	Base::Synchronization::Mutex> in_features;
 	Base::DataStreamIn<cv::Mat, Base::DataStreamBuffer::Newest,	Base::Synchronization::Mutex> in_descriptors;
+	Base::DataStreamIn<std::vector<cv::Point2f>, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> in_boundingRect;
 
 
 	// Output data streams
@@ -89,6 +90,7 @@ protected:
 
 	std::vector<Types::Features> allModels;
 	std::vector<cv::Mat> allDescriptors;
+	std::vector<std::vector<cv::Point2f> > allBoundingRect;
 
 };
 

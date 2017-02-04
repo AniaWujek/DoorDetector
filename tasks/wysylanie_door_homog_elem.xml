@@ -86,9 +86,10 @@
 					<param name="height">829</param>
 				</Component>
 
-				<Component name="DoorModel" type="DoorDetector:DoorModel" priority="113" bump="0">
+				<Component name="DoorModel" type="DoorDetector:QuadModel" priority="113" bump="0">
 					<param name="width">0.9</param>
 					<param name="height">2.0</param>
+					<param name="type">1</param>
 				</Component>
 
 				<Component name="DoorSolvePnP" type="CvBasic:CvSolvePnP" priority="115" bump="0">
@@ -109,7 +110,7 @@
 				</Component>
 
 				<Component name="DoorProxyElements" type="ROSProxy:Float32MultiArrayProxy2" priority="140" bump="0">
-					<param name="ros.topic_name">DoorElements_position</param>
+					<param name="ros.topic_name">door_elements_position</param>
 					<param name="ros.namespace">localization</param>
 				</Component>
 
@@ -195,7 +196,7 @@
 		<Source name="DoorFuzzyFitting.out_door">
 			<sink>DoorModel.in_points</sink>
 		</Source>
-		<Source name="DoorModel.out_doorModel">
+		<Source name="DoorModel.out_model">
 			<sink>DoorSolvePnP.in_object3d</sink>
 		</Source>
 		<Source name="DoorSolvePnP.out_homogMatrix">

@@ -9,10 +9,10 @@ FIND_PACKAGE( OpenCV REQUIRED )
 
 
 # Create an executable file from sources:
-ADD_LIBRARY(DoorModel SHARED ${files})
+ADD_LIBRARY(BoundingRect SHARED ${files})
 
 # Link external libraries
-TARGET_LINK_LIBRARIES(DoorModel ${DisCODe_LIBRARIES} 
+TARGET_LINK_LIBRARIES(BoundingRect ${DisCODe_LIBRARIES} 
 	${OpenCV_LIBS})
 
-INSTALL_COMPONENT(DoorModel)
+INSTALL_COMPONENT(BoundingRect)
