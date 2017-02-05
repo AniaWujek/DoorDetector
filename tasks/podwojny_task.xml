@@ -1,0 +1,418 @@
+<Task>
+	<!-- reference task information -->
+	<Reference>
+	</Reference>
+	
+	<!-- task definition -->
+	<Subtasks>
+		<Subtask name="Door" state="stopped">
+			<Executor name="DoorProcessing"  period="1">
+				<Component name="DoorSequence" type="CvBasic:Sequence" priority="10" bump="-1">
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/male/</param>
+					<param name="sequence.pattern">.*\.JPG</param>
+					<param name="mode.loop">1</param>
+					<param name="mode.auto_next_image">false</param>
+				</Component>
+
+				<Component name="DoorCameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="15" bump="0">
+					<param name="width">622</param>
+					<param name="height">829</param>
+					<param name="camera_matrix">1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0</param>
+					<param name="dist_coeffs">0.0 0.0 0.0 0.0 0.0</param>
+				</Component>
+
+				<Component name="DoorUndistort" type="CvBasic:CvUndistort" priority="17" bump="0">
+				</Component>
+				
+				<Component name="DoorGaussianBlur" type="CvBasic:CvGaussianBlur" priority="20" bump="0">
+				    <param name="sigmax">0.0</param>
+				    <param name="sigmay">0.0</param>
+				    <param name="kernel.height">9</param>
+				    <param name="kernel.width">9</param>
+				</Component>
+
+				<Component name="DoorColorConv" type="CvBasic:CvColorConv" priority="30" bump="0">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+
+				<Component name="DoorHistogram" type="DoorDetector:HistogramEqualization" priority="40" bump="0">
+				</Component>
+
+				<Component name="DoorCanny" type="CvBasic:CvCanny" priority="50" bump="0">
+					<param name="histeresis.lowerThreshold">50</param>
+					<param name="histeresis.higherThreshold">150</param>
+					<param name="autoThresh">1</param>
+					<param name="ratio">0.25</param>
+				</Component>
+
+				<Component name="DoorMorphology" type="CvBasic:CvMorphology" priority="60" bump="0">
+					<param name="type">MORPH_CLOSE</param>
+					<param name="iterations">1</param>
+				</Component>
+
+				<Component name="DoorLines" type="CvBasic:CvHoughLines" priority="70" bump="0">
+					<param name="threshold">75</param>
+					<param name="minLineLength">40</param>
+					<param name="maxLineGap">10</param>
+					<param name="clusters">4</param>
+					<param name="thresh">10</param>
+					<param name="improve">0</param>
+				</Component>
+
+				<Component name="DoorImproveLines" type="DoorDetector:ImproveLines" priority="80" bump="0">
+					<param name="closeRatio">0.55</param>
+					<param name="collinearRatio">0.005</param>
+					<param name="shortRatio">0.0</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
+				</Component>
+
+				<Component name="DoorImproveLines2" type="DoorDetector:ImproveLines" priority="90" bump="0">
+					<param name="closeRatio">1.0</param>
+					<param name="collinearRatio">0.005</param>
+					<param name="shortRatio">0.15</param>
+					<param name="width">622</param>
+					<param name="height">829</param>
+				</Component>
+
+				<Component name="DoorCorners" type="DoorDetector:FindDoorCorners" priority="100" bump="0">
+					<param name="k_param">0.05</param>
+					<param name="window_size">10</param>
+					<param name="fast_param">6</param>
+				</Component>
+
+				<Component name="DoorFuzzyFitting" type="DoorDetector:LinesCornersFitting2" priority="110" bump="0">
+					<param name="width">622</param>
+					<param name="height">829</param>
+				</Component>
+
+				<Component name="DoorModel" type="DoorDetector:QuadModel" priority="113" bump="0">
+					<param name="width">0.9</param>
+					<param name="height">2.0</param>
+					<param name="type">1</param>
+				</Component>
+
+				<Component name="DoorSolvePnP" type="CvBasic:CvSolvePnP" priority="115" bump="0">
+				</Component>
+
+				<Component name="DoorDrawSystem" type="CvBasic:DrawCoordinateSystem" priority="117" bump="0">
+				</Component>
+
+
+				<Component name="DoorElements" type="DoorDetector:DoorElementsROI" priority="120" bump="0">
+					<param name="ratio">0.25</param>
+					<param name="epsilon">10</param>
+				</Component>
+
+				<Component name="DoorProxyHomog" type="ROSProxy:Float32MultiArrayProxy2" priority="130" bump="0">
+					<param name="ros.topic_name">door_homog_matrix</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+				<Component name="DoorProxyElements" type="ROSProxy:Float32MultiArrayProxy2" priority="140" bump="0">
+					<param name="ros.topic_name">door_elements_position</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+				<Component name="DoorProxy" type="ROSProxy:Float32MultiArrayProxy2" priority="150" bump="0">
+					<param name="ros.topic_name">door_position</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+								
+			</Executor>
+		</Subtask>	
+
+		<Subtask name="Elements" state="stopped">
+			<Executor name="ElementsProcessing"  period="2">				
+
+				<Component name="ElementObject" type="CvBasic:Sequence" priority="10" bump="0">
+					<param name="sequence.pattern">.*\.png</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamki/</param>
+					<param name="mode.loop">1</param>
+					<param name="mode.auto_next_image">0</param>
+				</Component>
+
+				<Component name="ElementCameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="15" bump="0">
+					<param name="width">1296</param>
+					<param name="height">1032</param>
+					<param name="camera_matrix">1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0</param>
+					<param name="dist_coeffs">0.0 0.0 0.0 0.0 0.0</param>
+				</Component>
+
+				<Component name="ElementUndistort" type="CvBasic:CvUndistort" priority="17" bump="0">
+				</Component>			
+				
+				<Component name="ElementObjectColor" type="CvBasic:CvColorConv" priority="20">
+					<param name="type">BGR2GRAY</param>
+				</Component>
+				
+				<Component name="ElementFeatures" type="CvBasic:FeatureDetector" priority="40">
+				</Component>
+
+				<Component name="ElementModelLoader" type="DoorDetector:ModelLoader" priority="50" bump="0">
+					<param name="pattern">.*\.yml</param>
+					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
+				</Component>				
+				
+				<Component name="ElementMatcher" type="DoorDetector:CvBruteForce" priority="60" bump="0">
+					<param name="print_stats">0</param>
+					<param name="recalculate_distance">0</param>
+					<param name="distance">50</param>
+				</Component>
+
+				<Component name="ElementFakeModel" type="DoorDetector:ModelFaker" priority="65" bump="0">
+					<param name="width">1296</param>
+					<param name="height">1032</param>
+				</Component>
+				
+				<Component name="ElementCalc" type="CvBasic:FindHomography" priority="70" bump="0">
+				</Component>
+				
+				<Component name="ElementTransform" type="CvBasic:PerspectiveTransform" priority="80" bump="0">
+				</Component>
+
+				<Component name="ElementTransform2" type="CvBasic:PerspectiveTransform" priority="81" bump="0">
+				</Component>
+				
+				<Component name="ElementEdgeColor" type="CvBasic:CvColorConv" priority="90">
+					<param name="type">GRAY2BGR</param>
+				</Component>
+				
+				<Component name="ElementSum" type="CvBasic:Sum" priority="100" bump="0">
+				</Component>
+
+				<Component name="ElementModel" type="DoorDetector:QuadModel" priority="105" bum="0">
+					<param name="height">0.05</param>
+					<param name="width">0.05</param>
+					<param name="type">0</param>
+				</Component>
+
+				<Component name="ElementSolvePnP" type="CvBasic:CvSolvePnP" priority="106" bump="0">
+				</Component>
+
+				<Component name="ElementDrawSystem" type="CvBasic:DrawCoordinateSystem" priority="107" bump="0">
+				</Component>
+
+				<Component name="ElementProxyHomog" type="ROSProxy:Float32MultiArrayProxy2" priority="130" bump="0">
+					<param name="ros.topic_name">element_homog_matrix</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
+				
+			</Executor>
+		</Subtask>
+
+		<Subtask name="Visualization">
+			<Executor name="VisualProcessing" period="1">
+				<Component name="DoorWindow" type="CvBasic:CvWindow" priority="160" bump="0">
+					<param name="count">2</param>
+					<param name="title">system,elems</param>
+					<param name="window_resize">1</param>
+				</Component>
+
+				<Component name="ElementWindow" type="CvBasic:CvWindow" priority="110" bump="0">
+					<param name="count">3</param>
+					<param name="title">Object,Transform,Edges</param>
+					<param name="window_resize">1</param>
+				</Component>
+			</Executor>
+		</Subtask>
+	
+	</Subtasks>
+	
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		<Source name="DoorSequence.out_img">
+			<sink>DoorUndistort.in_img</sink>
+			<sink>DoorWindow.in_img0</sink>	
+			<sink>DoorGaussianBlur.in_img</sink>	
+			<sink>DoorFuzzyFitting.in_img</sink>	
+		</Source>
+		<Source name="DoorCameraInfo.out_camera_info">
+			<sink>DoorUndistort.in_camera_info</sink>
+			<sink>DoorSolvePnP.in_camera_info</sink>
+			<sink>DoorDrawSystem.in_camera_matrix</sink>
+		</Source>
+		<Source name="DoorUndistort.out_img">	
+			
+		</Source>
+		<Source name="DoorGaussianBlur.out_img">
+			<sink>DoorColorConv.in_img</sink>
+		</Source>
+		<Source name="DoorColorConv.out_img">
+			<sink>DoorHistogram.in_img</sink>			
+		</Source>
+		<Source name="DoorHistogram.out_img">
+			<sink>DoorCanny.in_img</sink>
+			<sink>DoorCorners.in_img</sink>	
+			<sink>DoorElements.in_img</sink>		
+		</Source>
+		<Source name="DoorCanny.out_img">			
+			<sink>DoorMorphology.in_img</sink>
+		</Source>
+		<Source name="DoorMorphology.out_img">
+			<sink>DoorLines.in_img</sink>			
+		</Source>
+		<Source name="DoorLines.out_lines">
+			<sink>DoorImproveLines.in_lines</sink>	
+		</Source>
+		<Source name="DoorImproveLines.out_lines">
+			<sink>DoorImproveLines2.in_lines</sink>
+		</Source>
+		<Source name="DoorImproveLines2.out_linesDrawable">
+			<sink>DoorWindow.in_draw0</sink>
+		</Source>
+		<Source name="DoorImproveLines2.out_lines">
+			<sink>DoorCorners.in_lines</sink>
+			<sink>DoorFuzzyFitting.in_lines</sink>
+		</Source>
+		<Source name="DoorCorners.out_cornersDrawable">
+		</Source>
+		<Source name="DoorFuzzyFitting.out_img">
+		</Source>
+		
+		<Source name="DoorCorners.out_corners">
+			<sink>DoorFuzzyFitting.in_corners</sink>
+		</Source>
+		<Source name="DoorCorners.out_linesPairs">
+			<sink>DoorFuzzyFitting.in_linesPairs</sink>
+		</Source>
+		
+		<Source name="DoorFuzzyFitting.out_door">
+			<sink>DoorElements.in_door</sink>
+		</Source>
+		<Source name="DoorElements.out_img">
+			<sink>DoorWindow.in_img1</sink>
+		</Source>
+		<Source name="DoorFuzzyFitting.out_door">
+			<sink>DoorModel.in_points</sink>
+		</Source>
+		<Source name="DoorModel.out_model">
+			<sink>DoorSolvePnP.in_object3d</sink>
+		</Source>
+		<Source name="DoorSolvePnP.out_homogMatrix">
+			<sink>DoorDrawSystem.in_homogMatrix</sink>
+		</Source>
+		<Source name="DoorDrawSystem.out_csystem">
+			<sink>DoorWindow.in_draw0</sink>
+		</Source>
+		<Source name="DoorSolvePnP.out_homogMatrixVec">
+			<sink>DoorProxyHomog.in_data</sink>
+		</Source>
+		<Source name="DoorElements.out_elementCentersVec">
+			<sink>DoorProxyElements.in_data</sink>
+		</Source>
+		<Source name="DoorFuzzyFitting.out_doorVec">
+			<sink>DoorProxy.in_data</sink>
+		</Source>
+
+
+
+
+		<Source name="ElementFakeModel.out_img">
+			<sink>ElementTransform.in_img</sink>
+		</Source>
+
+		<Source name="ElementModelLoader.out_features">
+			<sink>ElementMatcher.in_featuresVec</sink>
+		</Source>
+
+		<Source name="ElementModelLoader.out_descriptors">
+			<sink>ElementMatcher.in_descriptorsVec</sink>
+		</Source>
+
+		<Source name="ElementMatcher.out_features">
+			<sink>ElementCalc.in_features0</sink>
+		</Source>		
+		
+		<Source name="ElementObject.out_img">
+			<sink>ElementUndistort.in_img</sink>
+			<sink>ElementWindow.in_img0</sink>
+		</Source>
+
+		<Source name="ElementCameraInfo.out_camera_info">
+			<sink>ElementUndistort.in_camera_info</sink>
+			<sink>ElementSolvePnP.in_camera_info</sink>
+			<sink>ElementDrawSystem.in_camera_matrix</sink>
+		</Source>
+
+		<Source name="ElementUndistort.out_img">
+			
+			<sink>ElementObjectColor.in_img</sink>
+			<sink>ElementSum.in_img1</sink>
+		</Source>
+		
+		<Source name="ElementObjectColor.out_img">
+			<sink>ElementFeatures.in_img_B</sink>
+		</Source>
+		
+		<Source name="ElementFeatures.out_features_B">
+			<sink>ElementCalc.in_features1</sink>
+			<sink>ElementMatcher.in_features</sink>
+		</Source>
+		
+		<Source name="ElementFeatures.out_descriptors_B">
+			<sink>ElementMatcher.in_descriptors</sink>
+		</Source>
+		
+		<Source name="ElementTransform.out_draw">
+			<!--<sink>ElementWindow.in_draw0</sink>-->
+		</Source>
+		
+		<Source name="ElementTransform.out_img">
+			<sink>ElementEdgeColor.in_img</sink>
+		</Source>
+		
+		<Source name="ElementEdgeColor.out_img">
+			<sink>ElementSum.in_img2</sink>
+			<sink>ElementWindow.in_img2</sink>
+		</Source>
+		
+		<Source name="ElementSum.out_img">
+			<sink>ElementWindow.in_img1</sink>
+		</Source>
+		
+		<Source name="ElementMatcher.out_matches">
+			<sink>ElementCalc.in_matches</sink>
+		</Source>
+		
+		<Source name="ElementCalc.out_homography">
+			<sink>ElementTransform.in_homography</sink>
+			<sink>ElementTransform2.in_homography</sink>
+		</Source>
+
+		<Source name="ElementModelLoader.out_boundingRect">
+			<sink>ElementMatcher.in_rectVec</sink>
+		</Source>
+
+		<Source name="ElementMatcher.out_rect">
+			<sink>ElementFakeModel.in_rect</sink>
+			<sink>ElementTransform2.in_points</sink>
+		</Source>
+
+		<Source name="ElementTransform2.out_points">
+			<sink>ElementModel.in_points</sink>
+		</Source>
+
+		<Source name="ElementModel.out_model">
+			<sink>ElementSolvePnP.in_object3d</sink>
+		</Source>
+
+		<Source name="ElementSolvePnP.out_homogMatrix">
+			<sink>ElementDrawSystem.in_homogMatrix</sink>
+		</Source>
+
+		<Source name="ElementDrawSystem.out_csystem">
+			<sink>ElementWindow.in_draw0</sink>
+		</Source>
+
+		<Source name="ElementSolvePnP.out_homogMatrixVec">
+			<sink>ElementProxyHomog.in_data</sink>
+		</Source>
+	</DataStreams>
+</Task>
+
+
+
+

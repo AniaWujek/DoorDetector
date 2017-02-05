@@ -95,7 +95,7 @@
 				<Component name="DoorSolvePnP" type="CvBasic:CvSolvePnP" priority="115" bump="0">
 				</Component>
 
-				<Component name="DrawSystem" type="CvBasic:DrawCoordinateSystem" priority="117" bump="0">
+				<Component name="DoorDrawSystem" type="CvBasic:DrawCoordinateSystem" priority="117" bump="0">
 				</Component>
 
 
@@ -140,7 +140,7 @@
 		<Source name="DoorCameraInfo.out_camera_info">
 			<sink>DoorUndistort.in_camera_info</sink>
 			<sink>DoorSolvePnP.in_camera_info</sink>
-			<sink>DrawSystem.in_camera_matrix</sink>
+			<sink>DoorDrawSystem.in_camera_matrix</sink>
 		</Source>
 		<Source name="DoorUndistort.out_img">	
 			
@@ -200,9 +200,9 @@
 			<sink>DoorSolvePnP.in_object3d</sink>
 		</Source>
 		<Source name="DoorSolvePnP.out_homogMatrix">
-			<sink>DrawSystem.in_homogMatrix</sink>
+			<sink>DoorDrawSystem.in_homogMatrix</sink>
 		</Source>
-		<Source name="DrawSystem.out_csystem">
+		<Source name="DoorDrawSystem.out_csystem">
 			<sink>DoorWindow.in_draw0</sink>
 		</Source>
 		<Source name="DoorSolvePnP.out_homogMatrixVec">

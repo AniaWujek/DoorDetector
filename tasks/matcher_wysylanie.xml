@@ -50,6 +50,9 @@
 				
 				<Component name="ElementTransform" type="CvBasic:PerspectiveTransform" priority="80" bump="0">
 				</Component>
+
+				<Component name="ElementTransform2" type="CvBasic:PerspectiveTransform" priority="81" bump="0">
+				</Component>
 				
 				<Component name="ElementEdgeColor" type="CvBasic:CvColorConv" priority="90">
 					<param name="type">GRAY2BGR</param>
@@ -68,6 +71,11 @@
 				</Component>
 
 				<Component name="ElementDrawSystem" type="CvBasic:DrawCoordinateSystem" priority="107" bump="0">
+				</Component>
+
+				<Component name="ElementProxyHomog" type="ROSProxy:Float32MultiArrayProxy2" priority="130" bump="0">
+					<param name="ros.topic_name">element_homog_matrix</param>
+					<param name="ros.namespace">localization</param>
 				</Component>
 
 				<Component name="ElementWindow" type="CvBasic:CvWindow" priority="110" bump="0">
@@ -152,14 +160,19 @@
 		
 		<Source name="ElementCalc.out_homography">
 			<sink>ElementTransform.in_homography</sink>
+			<sink>ElementTransform2.in_homography</sink>
 		</Source>
 
 		<Source name="ElementModelLoader.out_boundingRect">
 			<sink>ElementMatcher.in_rectVec</sink>
 		</Source>
 
-		<Source name="ElementMatcher.out_rect"> <- tu idą punkty modelu, a nie obiektu, do poprawki
+		<Source name="ElementMatcher.out_rect">
 			<sink>ElementFakeModel.in_rect</sink>
+			<sink>ElementTransform2.in_points</sink>
+		</Source>
+
+		<Source name="ElementTransform2.out_points">
 			<sink>ElementModel.in_points</sink>
 		</Source>
 
@@ -173,6 +186,10 @@
 
 		<Source name="ElementDrawSystem.out_csystem">
 			<sink>ElementWindow.in_draw0</sink>
+		</Source>
+
+		<Source name="ElementSolvePnP.out_homogMatrixVec">
+			<sink>ElementProxyHomog.in_data</sink>
 		</Source>
 
 
