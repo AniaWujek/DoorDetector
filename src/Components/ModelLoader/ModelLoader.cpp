@@ -32,6 +32,7 @@ void ModelLoader::prepareInterface() {
 	registerStream("out_features", &out_features);
 	registerStream("out_descriptors", &out_descriptors);
 	registerStream("out_boundingRect", &out_boundingRect);
+	registerStream("out_names", &out_names);
 	// Register handlers
 	registerHandler("LoadModels", boost::bind(&ModelLoader::LoadModels, this));
 	addDependency("LoadModels", NULL);
@@ -74,6 +75,8 @@ bool ModelLoader::onStart() {
 void ModelLoader::ReloadModels() {
 	features.clear();
 	descriptors.clear();
+	boundingRect.clear();
+	
 	if(findFiles()) {
 		for(int file=0; file<files.size(); ++file) {
 			cv::FileStorage fs(files[file],cv::FileStorage::READ);
@@ -104,6 +107,7 @@ void ModelLoader::LoadModels() {
 	out_descriptors.write(descriptors);
 	out_features.write(features);
 	out_boundingRect.write(boundingRect);
+	out_names.write(files);
 
 }
 

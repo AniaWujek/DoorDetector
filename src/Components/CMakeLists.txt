@@ -30,3 +30,5 @@ ADD_COMPONENT(CvBruteForce)
 ADD_COMPONENT(ModelFaker)
 
 ADD_COMPONENT(BoundingRect)
+
+ADD_COMPONENT(FindHomography)

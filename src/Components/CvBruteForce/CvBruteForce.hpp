@@ -88,6 +88,7 @@ protected:
 	Base::DataStreamIn <std::vector<cv::Mat>, Base::DataStreamBuffer::Newest> in_descriptorsVec;
 
 	Base::DataStreamIn <std::vector<std::vector<cv::Point2f> >, Base::DataStreamBuffer::Newest> in_rectVec;
+	Base::DataStreamIn<std::vector<std::string> , Base::DataStreamBuffer::Newest> in_modelNamesVec;
 
 	/// Input data streams containing images
 
@@ -96,6 +97,7 @@ protected:
 	Base::DataStreamOut < Types::Features > out_features;
 	Base::DataStreamOut <cv::Mat> out_descriptors;
 	Base::DataStreamOut <std::vector<cv::Point2f>> out_rect;
+	Base::DataStreamOut <std::string> out_modelName;
 
 	/// Flag: automatic distance recalculation.
 	Base::Property<bool> distance_recalc;

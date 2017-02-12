@@ -104,6 +104,15 @@
 					<param name="epsilon">10</param>
 				</Component>
 
+				<Component name="DoorHomography" type="CvBasic:FindHomography" priority="125" bump="0">
+				</Component>
+
+				<Component name="DoorTransform1" type="CvBasic:PerspectiveTransform" priority="126" bump="0">
+				</Component>
+
+				<Component name="DoorTransform2" type="CvBasic:PerspectiveTransform" priority="127" bump="0">
+				</Component>
+
 				<Component name="DoorProxyHomog" type="ROSProxy:Float32MultiArrayProxy2" priority="130" bump="0">
 					<param name="ros.topic_name">door_homog_matrix</param>
 					<param name="ros.namespace">localization</param>
@@ -196,6 +205,11 @@
 					<param name="ros.namespace">localization</param>
 				</Component>
 
+				<Component name="ElementProxyName" type="ROSProxy:StringProxy" priority="140" bump="0">
+					<param name="ros.topic_name">element_name</param>
+					<param name="ros.namespace">localization</param>
+				</Component>
+
 				
 			</Executor>
 		</Subtask>
@@ -284,6 +298,7 @@
 		</Source>
 		<Source name="DoorFuzzyFitting.out_door">
 			<sink>DoorModel.in_points</sink>
+			<sink>DoorTransform1.in_points</sink>
 		</Source>
 		<Source name="DoorModel.out_model">
 			<sink>DoorSolvePnP.in_object3d</sink>
@@ -297,12 +312,29 @@
 		<Source name="DoorSolvePnP.out_homogMatrixVec">
 			<sink>DoorProxyHomog.in_data</sink>
 		</Source>
-		<Source name="DoorElements.out_elementCentersVec">
+
+		<Source name="DoorModel.out_model">
+			<sink>DoorHomography.in_model</sink>
+		</Source>
+
+		<Source name="DoorHomography.out_homography">
+			<sink>DoorTransform1.in_homography</sink>
+			<sink>DoorTransform2.in_homography</sink>
+		</Source>
+
+		
+		<Source name="DoorElements.out_elementCenters">
+			<sink>DoorTransform2.in_points</sink>			
+		</Source>
+		<Source name="DoorTransform2.out_pointsVec">
 			<sink>DoorProxyElements.in_data</sink>
 		</Source>
-		<Source name="DoorFuzzyFitting.out_doorVec">
+
+		<Source name="DoorTransform1.out_pointsVec">
 			<sink>DoorProxy.in_data</sink>
 		</Source>
+
+		
 
 
 
@@ -324,20 +356,14 @@
 		</Source>		
 		
 		<Source name="ElementObject.out_img">
-			<sink>ElementUndistort.in_img</sink>
+			<sink>ElementObjectColor.in_img</sink>
+			<sink>ElementSum.in_img1</sink>
 			<sink>ElementWindow.in_img0</sink>
 		</Source>
 
 		<Source name="ElementCameraInfo.out_camera_info">
-			<sink>ElementUndistort.in_camera_info</sink>
 			<sink>ElementSolvePnP.in_camera_info</sink>
 			<sink>ElementDrawSystem.in_camera_matrix</sink>
-		</Source>
-
-		<Source name="ElementUndistort.out_img">
-			
-			<sink>ElementObjectColor.in_img</sink>
-			<sink>ElementSum.in_img1</sink>
 		</Source>
 		
 		<Source name="ElementObjectColor.out_img">
@@ -406,6 +432,13 @@
 
 		<Source name="ElementSolvePnP.out_homogMatrixVec">
 			<sink>ElementProxyHomog.in_data</sink>
+		</Source>
+
+		<Source name="ElementModelLoader.out_names">
+			<sink>ElementMatcher.in_modelNamesVec</sink>
+		</Source>
+		<Source name="ElementMatcher.out_modelName">
+			<sink>ElementProxyName.in_data</sink>
 		</Source>
 	</DataStreams>
 </Task>

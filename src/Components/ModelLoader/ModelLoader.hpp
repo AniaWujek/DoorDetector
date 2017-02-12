@@ -75,6 +75,7 @@ protected:
 	Base::DataStreamOut<std::vector<Types::Features>> out_features;
 	Base::DataStreamOut<std::vector<cv::Mat> > out_descriptors;
 	Base::DataStreamOut<std::vector<std::vector<cv::Point2f> > > out_boundingRect;
+	Base::DataStreamOut<std::vector<std::string> > out_names;
 
 	// Handlers
 

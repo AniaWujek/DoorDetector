@@ -43,6 +43,7 @@ void CvBruteForce::prepareInterface() {
 	addDependency("onNewImage", &in_descriptors);
 	addDependency("onNewImage", &in_descriptorsVec);
 	addDependency("onNewImage", &in_rectVec);
+	addDependency("onNewImage", &in_modelNamesVec);
 
 	// Input and output data streams.
 	registerStream("in_features", &in_features);
@@ -54,6 +55,8 @@ void CvBruteForce::prepareInterface() {
 	registerStream("out_descriptors", &out_descriptors);
 	registerStream("in_rectVec", &in_rectVec);
 	registerStream("out_rect", &out_rect);
+	registerStream("out_modelName", &out_modelName);
+	registerStream("in_modelNamesVec", &in_modelNamesVec);
 }
 
 bool CvBruteForce::onInit() {
@@ -84,6 +87,7 @@ void CvBruteForce::onNewImage()
 		// Read input descriptors.
 		cv::Mat descriptors = in_descriptors.read();
 		std::vector<cv::Mat> descriptorsVec = in_descriptorsVec.read();
+		std::vector<std::string> modelNames = in_modelNamesVec.read();
 
 		// Matching descriptor vectors using BruteForce matcher.
 		BFMatcher matcher(cv::NORM_HAMMING); //BruteForce
@@ -153,6 +157,7 @@ void CvBruteForce::onNewImage()
 		out_features.write(featuresVec[best_matches]);
 		out_descriptors.write(descriptorsVec[best_matches]);
 		out_rect.write(rects[best_matches]);
+		out_modelName.write(modelNames[best_matches]);
 	} catch (...) {
 		CLOG(LERROR) << "CvBruteForce::onNewImage failed\n";
 	}
