@@ -8,7 +8,7 @@
 		<Subtask name="Door" state="stopped">
 			<Executor name="DoorProcessing"  period="1">
 				<Component name="DoorSequence" type="CvBasic:Sequence" priority="10" bump="-1">
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data/male/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../data/</param>
 					<param name="sequence.pattern">.*\.JPG</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">false</param>
@@ -137,7 +137,7 @@
 
 				<Component name="ElementObject" type="CvBasic:Sequence" priority="10" bump="0">
 					<param name="sequence.pattern">.*\.png</param>
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/zamki/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../data/modele/</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">0</param>
 				</Component>
@@ -158,7 +158,7 @@
 
 				<Component name="ElementModelLoader" type="DoorDetector:ModelLoader" priority="50" bump="0">
 					<param name="pattern">.*\.yml</param>
-					<param name="directory">%[TASK_LOCATION]%/../../modele/</param>
+					<param name="directory">%[TASK_LOCATION]%/../data/modele/</param>
 				</Component>				
 				
 				<Component name="ElementMatcher" type="DoorDetector:CvBruteForce" priority="60" bump="0">

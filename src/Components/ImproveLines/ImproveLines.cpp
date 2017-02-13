@@ -116,7 +116,7 @@ bool areCollinear(cv::Vec4i line0, cv::Vec4i line1, float collinearRatio) {
 
 }
 
-cv::Vec4i findLongestLine(vector<cv::Point> &points) {
+cv::Vec4i findLongestLine(std::vector<cv::Point> &points) {
 	float maxDist = getLength(points[0],points[1]);
 	int max0 = 0;
 	int max1 = 1;
@@ -155,7 +155,7 @@ void connectLines(std::vector<cv::Vec4i> &lines, std::vector<float> &angles, flo
 	while(!done) {
 		done = true;
 		for(int l1 = 0; l1 < lines.size()-1; ++l1) {
-			vector<int> to_connect;
+			std::vector<int> to_connect;
 			to_connect.push_back(l1);
 			for(int l2 = l1+1; l2 < lines.size(); ++l2) {
 				bool collinear = true;
@@ -193,7 +193,7 @@ void connectLines(std::vector<cv::Vec4i> &lines, std::vector<float> &angles, flo
 }
 
 void removeShort(std::vector<cv::Vec4i> &lines, int rows, int cols, float shortRatio) {
-	float thresh = float(min(cols, rows))*shortRatio;
+	float thresh = float(std::min(cols, rows))*shortRatio;
 	for(int i = lines.size()-1; i >= 0; --i) {
 		if(getLength(lines[i]) < thresh) {
 			lines.erase(lines.begin()+i);

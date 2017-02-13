@@ -103,7 +103,7 @@ void DoorElementsROI::DoorElementsROI_processor() {
 		higherThreshold = cv::threshold(roi(br), thresh_im, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 		lowerThreshold = ratio*higherThreshold;
 		cv::Canny(roi,edges,lowerThreshold,higherThreshold);
-		std::vector<vector<cv::Point> > contours;
+		std::vector<std::vector<cv::Point> > contours;
 		std::vector<cv::Vec4i> hierarchy;
 
 		

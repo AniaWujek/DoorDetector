@@ -17,7 +17,7 @@
 		<Subtask name="Main">
 			<Executor name="Processing"  period="1">
 				<Component name="Model" type="CvBasic:Sequence" priority="1" bump="0">
-					<param name="sequence.directory">%[TASK_LOCATION]%/../../data2/modele/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../data/modele/</param>
 					<param name="sequence.pattern">.*\.png</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">0</param>
@@ -38,7 +38,7 @@
 				</Component>
 
 				<Component name="Saver" type="DoorDetector:ModelSaver" priority="40">
-					<param name="path">/home/anna/discode/DCL/modele/</param>
+					<param name="path">/home/awujek1/DCL/DoorDetector/data/modele/</param>
 				</Component>
 			
 				<Component name="Window" type="CvBasic:CvWindow" priority="50" bump="0">

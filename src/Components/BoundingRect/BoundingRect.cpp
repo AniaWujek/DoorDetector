@@ -53,7 +53,7 @@ bool BoundingRect::onStart() {
 void BoundingRect::BoundingRect_processor() {
 	cv::Mat img = in_img.read();
 
-	std::vector<vector<cv::Point> > contours;
+	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;	
 	cv::findContours(img,contours,hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
 
