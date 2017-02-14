@@ -3,4 +3,4 @@ dist/
 *~
 *.jpg
 *.JPG
-data/
+data*/

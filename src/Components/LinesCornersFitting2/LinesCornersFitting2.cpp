@@ -22,8 +22,8 @@ LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 		quality("quality",3),
 		dev_choice("dev_choice", 0),
 		hsv_channel("hsv_channel", 0),
-		width("width", 100),
-		height("height", 100),
+		width("width", 0),
+		height("height", 0),
 		size_ratio_min("size_ratio_min", 1.5),
 		size_ratio_max("size_ratio_max", 3.0) {
 	registerProperty(prop);
@@ -681,6 +681,11 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
 			cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
 
+			cv::putText(img, "0", final_door[0],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+			cv::putText(img, "1", final_door[1],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+			cv::putText(img, "2", final_door[2],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+			cv::putText(img, "3", final_door[3],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+
 			//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
 
 
@@ -725,7 +730,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			}*/
 
 
-			/*for(int side=0; side<vertical.size(); ++side) {
+			for(int side=0; side<vertical.size(); ++side) {
 				for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
 					for(int l=0; l<vertical[side][prob1].size(); ++l) {
 						int idx = vertical[side][prob1][l];
@@ -734,15 +739,15 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
 						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
 						if(side==0) {
-							//if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 						else if(side==1) {
-							//if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 						else if(side==2) {
-							//if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 					}
@@ -758,20 +763,20 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2+10);
 						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
 						if(hei==0) {
-							//if(prob1==0) cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 						else if(hei==1) {
-							//if(prob1==0) cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 						else if(hei==2) {
-							//if(prob1==0) cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==0) cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 							if(prob1==1) cv::putText(img,"sureH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
 						}
 					}
 				}
-			}*/
+			}
 		}
 
 	std::vector<std::vector<float> > doorVec;
@@ -782,6 +787,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 		doorVec.push_back(p);
 	}
 
+	//std::cout<<"\n\n*** width: "<<width<<" , height: "<<height<<" *** \n\n";
 	out_img.write(img);
 	out_door.write(final_door);
 	out_doorVec.write(doorVec);

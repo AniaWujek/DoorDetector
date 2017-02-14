@@ -12,11 +12,18 @@
 				<Component name="DoorSource" type="ROSProxy:CameraSubscriber" priority="1" bump="0">
 					<param name="image_topic">/camera_t/image_color</param>
 				</Component>
+				<!--<Component name="DoorSource" type="CvBasic:Sequence" priority="1" bump="-1">
+					<param name="sequence.directory">%[TASK_LOCATION]%/../data3/</param>
+					<param name="sequence.pattern">.*\.png</param>
+					<param name="mode.loop">1</param>
+					<param name="mode.auto_next_image">false</param>
+				</Component>-->
 				<Component name="DoorCameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="2">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
-					<param name="camera_matrix">1299.351750 0.000000 650.629886 ; 0.000000 1292.515181 532.876867 ; 0.000000 0.000000 1.000000</param>
-					<param name="dist_coeffs">-0.420177 0.261718 0.002704 0.000718 0.000000</param>
+					<param name="camera_matrix">1865.165673 0.000000 617.319413;0.000000 861.282276 510.319369;0.000000 0.000000 1.000000</param>
+					<param name="dist_coeffs">-0.276026 0.066206 0.010329 0.002313 0.000000</param>
+					<param name="projection_matrix">703.814758 0.000000 608.809631 0.000000;0.000000 763.262146 523.807369 0.000000;0.000000 0.000000 1.000000 0.000000</param>
 				</Component>
 
 
@@ -83,13 +90,20 @@
 				<Component name="DoorFuzzyFitting" type="DoorDetector:LinesCornersFitting2" priority="110" bump="0">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
+					<param name="size_ratio_min">2.0</param>
+					<param name="size_ratio_max">4.0</param>
+					<param name="dev_choice">1</param>
 				</Component>
 
 				<Component name="DoorModel" type="DoorDetector:QuadModel" priority="113" bump="0">
-					<param name="width">0.9</param>
-					<param name="height">2.0</param>
+					<param name="width">0.35</param>
+					<param name="height">0.96</param>
 					<param name="type">1</param>
 				</Component>
+
+				<Component name="DoorCalib" type="CvBasic:Calib" priority="114" bump="0">
+				</Component>
+
 
 				<Component name="DoorSolvePnP" type="CvBasic:CvSolvePnP" priority="115" bump="0">
 				</Component>
@@ -239,8 +253,9 @@
 		</Source>
 		<Source name="DoorCameraInfo.out_camera_info">
 			<sink>DoorUndistort.in_camera_info</sink>
-			<sink>DoorSolvePnP.in_camera_info</sink>
-			<sink>DoorDrawSystem.in_camera_matrix</sink>
+			<!--<sink>DoorSolvePnP.in_camera_info</sink>
+			<sink>DoorDrawSystem.in_camera_matrix</sink>-->
+			<sink>DoorCalib.in_camera_info</sink>
 		</Source>
 		<Source name="DoorUndistort.out_img">	
 			<sink>DoorGaussianBlur.in_img</sink>	
@@ -303,6 +318,7 @@
 		</Source>
 		<Source name="DoorModel.out_model">
 			<sink>DoorSolvePnP.in_object3d</sink>
+			<sink>DoorCalib.in_object3d</sink>
 		</Source>
 		<Source name="DoorSolvePnP.out_homogMatrix">
 			<sink>DoorDrawSystem.in_homogMatrix</sink>
@@ -333,6 +349,11 @@
 
 		<Source name="DoorTransform1.out_pointsVec">
 			<sink>DoorProxy.in_data</sink>
+		</Source>
+
+		<Source name="DoorCalib.out_camera_info">
+			<sink>DoorSolvePnP.in_camera_info</sink>
+			<sink>DoorDrawSystem.in_camera_matrix</sink>
 		</Source>
 
 		
