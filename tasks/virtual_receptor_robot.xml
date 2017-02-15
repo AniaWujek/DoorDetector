@@ -13,7 +13,7 @@
 					<param name="image_topic">/camera_t/image_color</param>
 				</Component>
 				<!--<Component name="DoorSource" type="CvBasic:Sequence" priority="1" bump="-1">
-					<param name="sequence.directory">%[TASK_LOCATION]%/../data3/</param>
+					<param name="sequence.directory">%[TASK_LOCATION]%/../data4/</param>
 					<param name="sequence.pattern">.*\.png</param>
 					<param name="mode.loop">1</param>
 					<param name="mode.auto_next_image">false</param>
@@ -21,9 +21,8 @@
 				<Component name="DoorCameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="2">
 					<param name="width">1296</param>
 					<param name="height">1032</param>
-					<param name="camera_matrix">1865.165673 0.000000 617.319413;0.000000 861.282276 510.319369;0.000000 0.000000 1.000000</param>
-					<param name="dist_coeffs">-0.276026 0.066206 0.010329 0.002313 0.000000</param>
-					<param name="projection_matrix">703.814758 0.000000 608.809631 0.000000;0.000000 763.262146 523.807369 0.000000;0.000000 0.000000 1.000000 0.000000</param>
+					<param name="camera_matrix">1069.211120 0.000000 650.961261;0.000000 1066.521173 544.207546;0.000000 0.000000 1.000000</param>
+					<param name="dist_coeffs">-0.404361 0.187836 -0.001929 0.001386 0.000000</param>
 				</Component>
 
 
@@ -256,6 +255,8 @@
 			<!--<sink>DoorSolvePnP.in_camera_info</sink>
 			<sink>DoorDrawSystem.in_camera_matrix</sink>-->
 			<sink>DoorCalib.in_camera_info</sink>
+
+			
 		</Source>
 		<Source name="DoorUndistort.out_img">	
 			<sink>DoorGaussianBlur.in_img</sink>	
@@ -285,7 +286,7 @@
 			<sink>DoorImproveLines2.in_lines</sink>
 		</Source>
 		<Source name="DoorImproveLines2.out_linesDrawable">
-			<sink>DoorWindow.in_draw0</sink>
+
 		</Source>
 		<Source name="DoorImproveLines2.out_lines">
 			<sink>DoorCorners.in_lines</sink>
@@ -351,7 +352,7 @@
 			<sink>DoorProxy.in_data</sink>
 		</Source>
 
-		<Source name="DoorCalib.out_camera_info">
+		<Source name="DoorUndistort.out_camera_info">
 			<sink>DoorSolvePnP.in_camera_info</sink>
 			<sink>DoorDrawSystem.in_camera_matrix</sink>
 		</Source>

@@ -685,6 +685,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			cv::putText(img, "1", final_door[1],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
 			cv::putText(img, "2", final_door[2],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
 			cv::putText(img, "3", final_door[3],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+		}
 
 			//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
 
@@ -777,7 +778,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 					}
 				}
 			}
-		}
+		
 
 	std::vector<std::vector<float> > doorVec;
 	for(int i=0; i<final_door.size(); ++i) {
