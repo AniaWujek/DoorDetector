@@ -25,7 +25,8 @@ LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 		width("width", 0),
 		height("height", 0),
 		size_ratio_min("size_ratio_min", 1.5),
-		size_ratio_max("size_ratio_max", 3.0) {
+		size_ratio_max("size_ratio_max", 3.0),
+		show_final_door("show_final_door", 1) {
 	registerProperty(prop);
 	registerProperty(quality);
 	registerProperty(dev_choice);
@@ -33,6 +34,7 @@ LinesCornersFitting2::LinesCornersFitting2(const std::string & name) :
 	registerProperty(height);
 	registerProperty(size_ratio_min);
 	registerProperty(size_ratio_max);
+	registerProperty(show_final_door);
 
 	hsv_channel.addConstraint("0");
 	hsv_channel.addConstraint("2");
@@ -391,6 +393,72 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 
 	check_lines(vertical,horizontal,lines);
 
+
+
+	for(int side=0; side<vertical.size(); ++side) {
+				for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
+					for(int l=0; l<vertical[side][prob1].size(); ++l) {
+						int idx = vertical[side][prob1][l];
+						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
+						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
+						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
+						
+						cv::Scalar c;
+						int thickness;
+						if(side==0) {
+							c = cv::Scalar(255,0,0);
+							if(prob1==0) thickness = 10;//cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15;//cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(side==1) {
+							c = cv::Scalar(0,255,0);
+							if(prob1==0) thickness = 10;//cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15;//cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(side==2) {
+							c = cv::Scalar(0,0,255);
+							if(prob1==0) thickness = 10;//cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15;//cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						cv::line(img,p1,p2,c,thickness);
+					}
+				}
+			}
+
+			for(int hei=0; hei<horizontal.size(); ++hei) {
+				for(int prob1=0; prob1<horizontal[hei].size(); ++prob1) {
+					for(int l=0; l<horizontal[hei][prob1].size(); ++l) {
+						int idx = horizontal[hei][prob1][l];
+						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
+						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
+						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2+10);
+						
+						cv::Scalar c;
+						int thickness;
+						if(hei==0) {
+							c = cv::Scalar(125,125,0);
+							if(prob1==0) thickness = 10; //cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15; //cv::putText(img,"sureH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(hei==1) {
+							c = cv::Scalar(120,0,125);
+							if(prob1==0) thickness = 10; //cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15; //cv::putText(img,"sureH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						else if(hei==2) {
+							c = cv::Scalar(0,125,125);
+							if(prob1==0) thickness = 10; //cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+							if(prob1==1) thickness = 15; //cv::putText(img,"sureH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
+						}
+						cv::line(img,p1,p2,c,thickness);
+					}
+				}
+			}
+
+
+
+
+
 	horizontal[0][0].insert(horizontal[0][0].end(),horizontal[1][0].begin(),horizontal[1][0].end());
 	horizontal[0][1].insert(horizontal[0][1].end(),horizontal[1][1].begin(),horizontal[1][1].end());
 	horizontal[2][0].insert(horizontal[2][0].end(),horizontal[1][0].begin(),horizontal[1][0].end());
@@ -676,15 +744,17 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			final_door[3].y /= door_groups[max_group].size();
 
 
-			cv::line(img,final_door[0],final_door[1],cv::Scalar(255,0,255),10);
-			cv::line(img,final_door[1],final_door[2],cv::Scalar(255,0,255),10);
-			cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
-			cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
+			if(show_final_door) {
+				cv::line(img,final_door[0],final_door[1],cv::Scalar(255,0,255),10);
+				cv::line(img,final_door[1],final_door[2],cv::Scalar(255,0,255),10);
+				cv::line(img,final_door[2],final_door[3],cv::Scalar(255,0,255),10);
+				cv::line(img,final_door[3],final_door[0],cv::Scalar(255,0,255),10);
+			}
 
-			cv::putText(img, "0", final_door[0],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+			/*cv::putText(img, "0", final_door[0],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
 			cv::putText(img, "1", final_door[1],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
 			cv::putText(img, "2", final_door[2],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
-			cv::putText(img, "3", final_door[3],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);
+			cv::putText(img, "3", final_door[3],cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0,0,255),3);*/
 		}
 
 			//std::cout<<"\n***\n"<<final_door[0]<<" "<<final_door[1]<<" "<<final_door[2]<<" "<<final_door[3]<<"\n***\n";
@@ -731,53 +801,7 @@ void LinesCornersFitting2::LinesCornersFitting2_processor() {
 			}*/
 
 
-			for(int side=0; side<vertical.size(); ++side) {
-				for(int prob1=0; prob1<vertical[side].size(); ++prob1) {
-					for(int l=0; l<vertical[side][prob1].size(); ++l) {
-						int idx = vertical[side][prob1][l];
-						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
-						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
-						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2);
-						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
-						if(side==0) {
-							if(prob1==0) cv::putText(img,"probV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureV-Left",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-						else if(side==1) {
-							if(prob1==0) cv::putText(img,"probV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureV-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-						else if(side==2) {
-							if(prob1==0) cv::putText(img,"probV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureV-Right",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-					}
-				}
-			}
 
-			for(int hei=0; hei<horizontal.size(); ++hei) {
-				for(int prob1=0; prob1<horizontal[hei].size(); ++prob1) {
-					for(int l=0; l<horizontal[hei][prob1].size(); ++l) {
-						int idx = horizontal[hei][prob1][l];
-						cv::Point p1 = cv::Point(lines[idx][0],lines[idx][1]);
-						cv::Point p2 = cv::Point(lines[idx][2],lines[idx][3]);
-						cv::Point p3 = cv::Point((lines[idx][0]+lines[idx][2])/2,(lines[idx][1]+lines[idx][3])/2+10);
-						cv::line(img,p1,p2,cv::Scalar(0,255,0),3);
-						if(hei==0) {
-							if(prob1==0) cv::putText(img,"probH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureH-High",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-						else if(hei==1) {
-							if(prob1==0) cv::putText(img,"probH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureH-Mid",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-						else if(hei==2) {
-							if(prob1==0) cv::putText(img,"probH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-							if(prob1==1) cv::putText(img,"sureH-Low",p3,cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0,0,255));
-						}
-					}
-				}
-			}
 		
 
 	std::vector<std::vector<float> > doorVec;

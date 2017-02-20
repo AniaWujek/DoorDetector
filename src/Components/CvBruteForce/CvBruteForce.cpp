@@ -134,6 +134,7 @@ void CvBruteForce::onNewImage()
 		int best_matches = 0;
 		for(int i=1; i<good_matchesVec.size(); ++i) {
 			if(float(good_matchesVec[i].size())/float(matchesVec[i].size()) > float(good_matchesVec[best_matches].size())/float(matchesVec[best_matches].size())) best_matches = i;
+			//if(float(good_matchesVec[i].size()) > float(good_matchesVec[best_matches].size())) best_matches = i;
 		}
 
 		CLOG(LNOTICE) << "Best model: " << best_matches;
@@ -148,16 +149,19 @@ void CvBruteForce::onNewImage()
 
 
 		// Write the result to the output.
-		if(model_number>=0) best_matches = model_number;
+		//if(model_number>=0) best_matches = model_number;
 
 		std::vector<std::vector<cv::Point2f> > rects = in_rectVec.read();
 
+		std::cout<<"\n *** "<<good_matchesVec[best_matches].size()<<", "<< float(good_matchesVec[best_matches].size())/float(matchesVec[best_matches].size()) <<" *** \n";
+		/*if(good_matchesVec[best_matches].size()>20 && float(good_matchesVec[best_matches].size())/float(matchesVec[best_matches].size())>0.09)*/ {
 
-		out_matches.write(good_matchesVec[best_matches]);
-		out_features.write(featuresVec[best_matches]);
-		out_descriptors.write(descriptorsVec[best_matches]);
-		out_rect.write(rects[best_matches]);
-		out_modelName.write(modelNames[best_matches]);
+			out_matches.write(good_matchesVec[best_matches]);
+			out_features.write(featuresVec[best_matches]);
+			out_descriptors.write(descriptorsVec[best_matches]);
+			out_rect.write(rects[best_matches]);
+			out_modelName.write(modelNames[best_matches]);
+		}
 	} catch (...) {
 		CLOG(LERROR) << "CvBruteForce::onNewImage failed\n";
 	}

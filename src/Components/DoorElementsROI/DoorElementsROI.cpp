@@ -20,7 +20,8 @@ DoorElementsROI::DoorElementsROI(const std::string & name) :
 		ratio("ratio", 0.25),
 		contour_n("contour_n",0),
 		epsilon("epsilon",10),
-		horizontal_thresh("horizontal_thresh",10) {
+		horizontal_thresh("horizontal_thresh",10),
+		additional_check("additional_check", 0) {
 	registerProperty(ratio);
 	registerProperty(contour_n);
 	registerProperty(epsilon);
@@ -28,6 +29,7 @@ DoorElementsROI::DoorElementsROI(const std::string & name) :
 	horizontal_thresh.addConstraint("0");
 	horizontal_thresh.addConstraint("1000000");
 	registerProperty(horizontal_thresh);
+	registerProperty(additional_check);
 
 
 
@@ -79,6 +81,14 @@ void drawPoly(cv::Mat &img, std::vector<cv::Point2f> points, cv::Scalar color) {
 	cv::fillPoly(img,ppt,npt,1,color);
 }
 
+float getTriangleArea(cv::Point2f p0, cv::Point2f p1, cv::Point2f p2) {
+	return fabs(((p0.x-p2.x)*(p1.y-p0.y)-(p0.x-p1.x)*(p2.y-p0.y))/2.0);
+}
+
+float getLength(cv::Point p0, cv::Point p1) {
+    return sqrt((p0.x-p1.x)*(p0.x-p1.x) + (p0.y-p1.y)*(p0.y-p1.y));
+}
+
 void DoorElementsROI::DoorElementsROI_processor() {
 
 	cv::Mat img = in_img.read().clone();
@@ -99,10 +109,13 @@ void DoorElementsROI::DoorElementsROI_processor() {
 		cv::Mat mask = cv::Mat::zeros(img.rows,img.cols,CV_8U);
 		drawPoly(mask,door,cv::Scalar(255,255,255));
 		cv::bitwise_and(img,img,roi,mask);
+		cv::Mat thresh;
+		cv::adaptiveThreshold(roi,thresh, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 9, 5);
+
 		br = cv::boundingRect(door);
-		higherThreshold = cv::threshold(roi(br), thresh_im, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
+		higherThreshold = cv::threshold(thresh(br), thresh_im, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 		lowerThreshold = ratio*higherThreshold;
-		cv::Canny(roi,edges,lowerThreshold,higherThreshold);
+		cv::Canny(thresh,edges,lowerThreshold,higherThreshold);
 		std::vector<std::vector<cv::Point> > contours;
 		std::vector<cv::Vec4i> hierarchy;
 
@@ -145,6 +158,14 @@ void DoorElementsROI::DoorElementsROI_processor() {
 
 		cv::Mat drawing = cv::Mat::zeros(img.rows,img.cols,CV_8UC3);
 		cv::findContours(d,contours,hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
+
+		float door_area = getTriangleArea(door[0],door[1],door[2]) + getTriangleArea(door[0],door[2],door[3]);
+		float door_height = (door[1].y-door[0].y + door[2].y-door[3].y)/2.0;
+		float door_width = (door[0].x-door[3].x + door[1].x-door[2].x)/2.0;
+		float left = (door[3].x + door[2].x)/2.0;
+		float right = (door[0].x + door[1].x)/2.0;
+		float top = (door[3].y + door[0].y)/2.0;
+		float bottom = (door[2].y + door[1].y)/2.0;
 		for( int i = contours.size()-1; i>=0; i--) {
 			std::vector<cv::Point> curve;
 	     	cv::approxPolyDP(contours[i],curve,epsilon,true);
@@ -155,12 +176,34 @@ void DoorElementsROI::DoorElementsROI_processor() {
 	     	cv::Moments mu = cv::moments(contours[i]);
 	     	cv::Point2f center_mass = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
 
-	     	if(center_mass.x>=0 && center_mass.x<img.cols && center_mass.y>=0 && center_mass.y<img.rows) {
-	     		cv::circle(img,center_mass,5,cv::Scalar(255,255,255),-1);
+	     	float contour_area = cv::contourArea(contours[i]);
 
-		     	element_centers.push_back(center_mass);
+	     	bool good_center = true;
+	     	if(additional_check) {
+	     		good_center = false;
+	     		good_center = fabs(center_mass.y-top)/door_height>0.1 && fabs(center_mass.y-bottom)/door_height>0.4
+		     	&& (fabs(center_mass.x-left)/door_width<0.2 || fabs(center_mass.x-right)/door_width<0.2 || (fabs(center_mass.x-left)/door_width>0.3
+		     		&& fabs(center_mass.x-right)/door_width>0.3) && contour_area/door_area < 0.1);
+	     	}
+	     	
 
-				cv::drawContours( img, contours, i, cv::Scalar(0,0,255), 3, 8, hierarchy, 0, cv::Point() );
+	     	if(good_center && center_mass.x>=0 && center_mass.x<img.cols && center_mass.y>=0 && center_mass.y<img.rows ) {
+	     		float min_dist = door_width;
+	     		int min_contour = -1;
+	     		for(int i=0; i<element_centers.size(); ++i) {
+	     			float dist = getLength(element_centers[i],center_mass);
+	     			if(dist<min_dist) {
+	     				min_dist = dist;
+	     				min_contour = i;
+	     			}
+	     		}
+	     		if(min_dist>0.2 * door_width) {
+		     		cv::circle(img,center_mass,10,cv::Scalar(0,0,0),-1);
+
+			     	element_centers.push_back(center_mass);
+
+					cv::drawContours( img, contours, i, cv::Scalar(0,0,0), 5, 8, hierarchy, 0, cv::Point() );
+				}
 	     	}
 
 	     	

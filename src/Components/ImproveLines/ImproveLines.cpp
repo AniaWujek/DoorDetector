@@ -215,7 +215,7 @@ void ImproveLines::improveLinesProcessor() {
 	for( size_t i = 0; i < lines.size(); i++ )
 	{
         c.add(new Types::Line(cv::Point(lines[i][0], lines[i][1]),
-            cv::Point(lines[i][2], lines[i][3]), cv::Scalar(0,0,0)));		
+            cv::Point(lines[i][2], lines[i][3]), cv::Scalar(0,255,0)));		
 	}
 
 	out_lines.write(lines);

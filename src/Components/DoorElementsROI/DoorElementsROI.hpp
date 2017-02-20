@@ -84,6 +84,7 @@ protected:
 	Base::Property<int> contour_n;
 	Base::Property<int> epsilon;
 	Base::Property<int> horizontal_thresh;
+	Base::Property<bool> additional_check;
 
 	
 	// Handlers

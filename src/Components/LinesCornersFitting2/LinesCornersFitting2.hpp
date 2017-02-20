@@ -89,6 +89,7 @@ protected:
 	Base::Property<int> height;
 	Base::Property<float> size_ratio_min;
 	Base::Property<float> size_ratio_max;
+	Base::Property<bool> show_final_door;
 
 	
 	// Handlers
